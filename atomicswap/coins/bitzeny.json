@@ -1,0 +1,9 @@
+{
+  "name": "BitZeny",
+  "unit": "ZNY",
+  "p2pkh": 81,
+  "p2sh": 5,
+  "bech32_hrp": "bz",
+  "req_ver": 30000000,
+  "port": 9252
+}

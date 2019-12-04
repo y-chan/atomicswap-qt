@@ -1,0 +1,16 @@
+{
+  "name": "Koto",
+  "unit": "KOTO",
+  "p2pkh": [
+    24,
+    54
+  ],
+  "p2sh": [
+    24,
+    59
+  ],
+  "bech32_hrp": "koto",
+  "req_ver": 99999999,
+  "port": 8432,
+  "tx_ver": 1
+}

@@ -1,0 +1,9 @@
+{
+  "name": "Monacoin",
+  "unit": "MONA",
+  "p2pkh": 50,
+  "p2sh": 55,
+  "bech32_hrp": "mona",
+  "req_ver": 170000,
+  "port": 9402
+}

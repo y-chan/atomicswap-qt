@@ -1,0 +1,9 @@
+{
+  "name": "VIPSTARCOIN",
+  "unit": "VIPS",
+  "p2pkh": 70,
+  "p2sh": 50,
+  "bech32_hrp": "vips",
+  "req_ver": 1010600,
+  "port": 31916
+}
