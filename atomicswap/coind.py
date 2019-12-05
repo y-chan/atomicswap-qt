@@ -20,14 +20,14 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import base64
 import json
-import requests
 import platform
+from urllib import request
 from typing import Tuple, Union
 
-headers = {'content-type': 'text/plain;', }
-
 coins = "./atomicswap/coins/"
+
 
 class GetFeeError(Exception): pass
 
@@ -49,21 +49,23 @@ class Coind:
         self.p2pkh = p2pkh
         self.p2sh = p2sh
         self.bech32_hrp = bech32_hrp
-        self.port = port
-        self.user = user
-        self.pwd = pwd
+        self.url = 'http://localhost:%s' % port
+        self.auth = base64.b64encode((user + ":" + pwd).encode('utf-8'))
+        self.headers = {'content-type': 'text/plain;', "Authorization": "Basic " + self.auth.decode('utf-8')}
         self.sign_wallet = sign_wallet
         self.tx_version = tx_version
 
     def getrawchangeaddress(self) -> str:
         data = '{"jsonrpc":"1.0","id":"curltext","method":"getrawchangeaddress","params":["legacy"]}'
-        result = json.loads(requests.post('http://localhost:%s' % self.port, headers=headers, data=data,
-                                          auth=(self.user, self.pwd)).text)
+        req = request.Request(self.url, data.encode(), self.headers)
+        with request.urlopen(req) as res:
+            result = json.loads(res.read())
         addr = result["result"]
         if addr is None:
             data = '{"jsonrpc":"1.0","id":"curltext","method":"getrawchangeaddress","params":[]}'
-            result = json.loads(requests.post('http://localhost:%s' % self.port, headers=headers, data=data,
-                                              auth=(self.user, self.pwd)).text)
+            req = request.Request(self.url, data.encode(), self.headers)
+            with request.urlopen(req) as res:
+                result = json.loads(res.read())
             addr = result["result"]
             if addr is None:
                 raise InvalidRPCError(result["error"]["message"])
@@ -71,8 +73,9 @@ class Coind:
 
     def dumpprivkey(self, addr: str) -> str:
         data = '{"jsonrpc":"1.0","id":"curltext","method":"dumpprivkey","params":["%s"]}' % addr
-        result = json.loads(requests.post('http://localhost:%s' % self.port, headers=headers, data=data,
-                                          auth=(self.user, self.pwd)).text)
+        req = request.Request(self.url, data.encode(), self.headers)
+        with request.urlopen(req) as res:
+            result = json.loads(res.read())
         wif = result["result"]
         if wif is None:
             raise InvalidRPCError(result["error"]["message"])
@@ -84,13 +87,15 @@ class Coind:
         tx_hex = params["hex"]
         json_params = f'["{tx_hex}", {dict_str}]'
         data = '{"jsonrpc": "1.0", "id": "curltext", "method": "fundrawtransaction", "params": %s}' % json_params
-        result = json.loads(requests.post('http://localhost:%s' % self.port, headers=headers, data=data,
-                                          auth=(self.user, self.pwd)).text)
+        req = request.Request(self.url, data.encode(), self.headers)
+        with request.urlopen(req) as res:
+            result = json.loads(res.read())
         tx_dict = result["result"]
         if tx_dict is None and 'fundrawtransaction "hexstring"' in str(result["error"]):
             data = '{"jsonrpc": "1.0", "id": "curltext", "method": "fundrawtransaction", "params": ["%s"]}' % tx_hex
-            result = json.loads(requests.post('http://localhost:%s' % self.port, headers=headers, data=data,
-                                              auth=(self.user, self.pwd)).text)
+            req = request.Request(self.url, data.encode(), self.headers)
+            with request.urlopen(req) as res:
+                result = json.loads(res.read())
             tx_dict = result["result"]
         if tx_dict is None:
             raise InvalidRPCError(result["error"]["message"])
@@ -101,8 +106,9 @@ class Coind:
             data = '{"jsonrpc":"1.0","id":"curltext","method":"signrawtransactionwithwallet","params":["%s"]}' % tx_hex
         else:
             data = '{"jsonrpc":"1.0","id":"curltext","method":"signrawtransaction","params":["%s"]}' % tx_hex
-        result = json.loads(requests.post('http://localhost:%s' % self.port, headers=headers, data=data,
-                                          auth=(self.user, self.pwd)).text)
+        req = request.Request(self.url, data.encode(), self.headers)
+        with request.urlopen(req) as res:
+            result = json.loads(res.read())
         tx_dict = result["result"]
         if tx_dict is None:
             raise InvalidRPCError(result["error"]["message"])
@@ -110,8 +116,9 @@ class Coind:
 
     def sendrawtransaction(self, tx_hex: str) -> str:
         data = '{"jsonrpc":"1.0","id":"curltext","method":"sendrawtransaction","params":[%s]}' % tx_hex
-        result = json.loads(requests.post('http://localhost:%s' % self.port, headers=headers, data=data,
-                                          auth=(self.user, self.pwd)).text)
+        req = request.Request(self.url, data.encode(), self.headers)
+        with request.urlopen(req) as res:
+            result = json.loads(res.read())
         tx_dict = result["result"]
         if tx_dict is None:
             raise InvalidRPCError(result["error"]["message"])
@@ -119,8 +126,9 @@ class Coind:
 
     def info(self, method: str) -> dict:
         data = '{"jsonrpc":"1.0","id":"curltext","method":"%s","params":[]}' % method
-        result = json.loads(requests.post('http://localhost:%s' % self.port, headers=headers, data=data,
-                                          auth=(self.user, self.pwd)).text)
+        req = request.Request(self.url, data.encode(), self.headers)
+        with request.urlopen(req) as res:
+            result = json.loads(res.read())
         info = result["result"]
         if info is None:
             raise InvalidRPCError(result["error"]["message"])
@@ -140,8 +148,9 @@ class Coind:
 
     def estimatesmartfee(self, blocks=6) -> dict:
         data = '{"jsonrpc":"1.0","id":"curltext","method":"estimatesmartfee","params":[%s]}' % blocks
-        result = json.loads(requests.post('http://localhost:%s' % self.port, headers=headers, data=data,
-                                          auth=(self.user, self.pwd)).text)
+        req = request.Request(self.url, data.encode(), self.headers)
+        with request.urlopen(req) as res:
+            result = json.loads(res.read())
         fee = result["result"]
         if fee is None:
             raise InvalidRPCError(result["error"]["message"])
