@@ -1,10 +1,10 @@
-# gui-atomic coins folder
+# atomicswap-qt coins folder
 
 ## What is this folder?
 This folder contains coin file(json).
 
 ## Add coins
-If you want add coin to gui-atomic, you can pull request.
+If you want add coin to atomicswap-qt, you can pull request.
 I present the procedure.
 * 1, Add to \<coin name\>.json
   * json params explanation  
