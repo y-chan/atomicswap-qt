@@ -103,7 +103,7 @@ class Coind:
         return tx_dict
 
     def sendrawtransaction(self, tx_hex: str) -> str:
-        data = '{"jsonrpc":"1.0","id":"curltext","method":"sendrawtransaction","params":[%s]}' % tx_hex
+        data = '{"jsonrpc":"1.0","id":"curltext","method":"sendrawtransaction","params":["%s"]}' % tx_hex
         result = json.loads(requests.post(self.url, headers=headers, data=data, auth=(self.user, self.pwd)).text)
         tx_dict = result["result"]
         if tx_dict is None:
