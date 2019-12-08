@@ -33,7 +33,7 @@ from datetime import datetime, timedelta
 from typing import Tuple
 
 
-def auditcontract(contract_str: str, contract_tx_str: str, coind: Coind, logging=True) -> Tuple[bool, str, float]:
+def auditcontract(contract_str: str, contract_tx_str: str, coind: Coind, logging=True) -> Tuple[bool, bytes, float]:
     contract = binascii.a2b_hex(contract_str)
     try:
         contract_tx = deserialize_witness(contract_tx_str)
@@ -71,4 +71,4 @@ def auditcontract(contract_str: str, contract_tx_str: str, coind: Coind, logging
             print("Locktime reached in", reach)
         else:
             print("Contract refund time lock has expired")
-    return reach_bool, pushes["secret_hash"].hex(), contract_tx.tx_outs[contract_out].value / 1e8
+    return reach_bool, pushes["secret_hash"], contract_tx.tx_outs[contract_out].value / 1e8

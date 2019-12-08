@@ -59,8 +59,8 @@ class AtomicSwapQt(QMainWindow):
         self.send_coind = None
         self.receive_coind = None
         self.initiate_flag = False
-        self.secret = ""
-        self.secret_hash = ""
+        self.secret = b""
+        self.secret_hash = b""
         self.send_contract_tuple = None
         self.receive_tx = None
         self.main_window = QWidget(self)
@@ -554,9 +554,8 @@ class AtomicSwapQt(QMainWindow):
                 return
             result = self.receive_coind.sendrawtransaction(self.receive_tx.serialize_witness().hex())
             assert result == self.receive_tx.get_txid().hex()
-            self.redeem_result.setPlainText("Contract: " + self.send_contract_tuple.contract.hex())
-            self.redeem_result.append("Contract Transaction: " +
-                                      self.send_contract_tuple.contractTx.serialize_witness().hex())
+            self.redeem_result.setPlainText("Redeem Transaction: " +
+                                            self.recive_tx.serialize_witness().hex())
             self.back_button.setDisabled(True)
             if not self.initiate_flag:
                 self.button_widget.setCurrentIndex(2)
@@ -574,6 +573,7 @@ class AtomicSwapQt(QMainWindow):
             self.button_widget.setCurrentIndex(0)
         elif page_number == 3:
             self.back_button.setDisabled(True)
+            self.next_button_1.setEnabled(True)
         elif page_number == 5:
             self.button_widget.setCurrentIndex(1)
             self.back_button.setDisabled(True)

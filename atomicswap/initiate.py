@@ -31,9 +31,7 @@ from datetime import datetime
 from typing import Tuple
 
 
-def initiate(addr: str, amount: int, coind: Coind) -> Tuple[str, builtTuple]:
-    if not is_p2pkh(addr, coind):
-        return
+def initiate(addr: str, amount: int, coind: Coind) -> Tuple[bytes, builtTuple]:
     secret = secrets.token_bytes(secretSize)
     secret_hash = sha256(secret)
     locktime = int(time.mktime(datetime.now().timetuple())) + 48 * 60 * 60
