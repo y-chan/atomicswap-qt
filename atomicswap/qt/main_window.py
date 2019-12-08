@@ -398,7 +398,7 @@ class AtomicSwapQt(QMainWindow):
         else:
             try:
                 extractsecret(self.redeem_tx.text().strip(),
-                              self.secret_hash,
+                              self.secret_hash.hex(),
                               False)
                 self.redeem_tx_status_label.setText("Transaction is Ok")
             except:
@@ -502,7 +502,7 @@ class AtomicSwapQt(QMainWindow):
                 try:
                     self.send_contract_tuple = participate(self.p_addr_box.text(),
                                                            int(float(self.p_amount_box.text()) * 1e8),
-                                                           self.secret_hash,
+                                                           self.secret_hash.hex(),
                                                            self.send_coind)
                 except atomicswap.coind.InvalidRPCError as e:
                     self.statusBar().showMessage(str(e))
@@ -529,10 +529,10 @@ class AtomicSwapQt(QMainWindow):
             if not self.initiate_flag:
                 try:
                     self.secret = extractsecret(self.redeem_tx.text().strip(),
-                                                self.secret_hash)
+                                                self.secret_hash.hex())
                     self.receive_tx = redeem(self.contract_box.text().strip(),
                                              self.contract_tx_box.text().strip(),
-                                             self.secret,
+                                             self.secret.hex(),
                                              self.receive_coind)
                 except atomicswap.coind.InvalidRPCError as e:
                     self.statusBar().showMessage(str(e))
@@ -542,7 +542,7 @@ class AtomicSwapQt(QMainWindow):
                 try:
                     self.receive_tx = redeem(self.i_p_contract.text().strip(),
                                              self.i_p_tx.text().strip(),
-                                             self.secret,
+                                             self.secret.hex(),
                                              self.receive_coind)
                 except atomicswap.coind.InvalidRPCError as e:
                     self.statusBar().showMessage(str(e))
