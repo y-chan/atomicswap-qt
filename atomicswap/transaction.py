@@ -271,10 +271,6 @@ class MsgTx:
                 "vout": tx_outs}
 
 
-class Engine:
-    def __init__(self, ):
-        self.tx
-
 def deserialize(tx_hex: str, witness=False) -> MsgTx:
     tx_bytes = binascii.a2b_hex(tx_hex)
     version, tx_bytes = read_int(tx_bytes, 4)

@@ -27,3 +27,13 @@ Please read [here](atomicswap/coins/README.md).
 
 ## License
 This software is [MIT License](LICENSE).
+
+## Donation
+BTC: 37aNA4pMNB21D4fgtCtekCUGCx11TwXSRp  
+LTC: LMnPHEKbGc2NaJZPaS1Cs373RFXjppJAKM  
+MONA: PPTSAtG2RXz4pP5Z8sFMsP8j6UsTZ92PFg  
+ZNY: Zg8fk7cb7ShvGGejzwGpCmTsN35RJT8UX6  
+KOTO: k15HqPQGZaKzR3DnLYsGbAH2hN24zV9JSre  
+VIPS: VVxVKn43XD8v3etCsdWC5imAL1nteLUhEm  
+BELL: bP4pNxZpVbPFL1uLhUtAUv7XxWjv41XnZA  
+SUGAR: sugar1qevcr4lrv2vv2ac7nk4wqkjqvh7st2d9tw5h28r  

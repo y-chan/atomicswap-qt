@@ -23,8 +23,8 @@
 
 from .address import b58_address_to_hash160, hash160_to_b58_address, hash160
 from .coind import Coind
-from .contract import (estimateRedeemSerializeSize, fee_for_serialize_size,
-                       is_dust_output, createSig, redeemP2SHContract, calcFeePerKb)
+from .contract import (estimateRedeemSerializeSize, fee_for_serialize_size, createSig,
+                       is_dust_output, verify, redeemP2SHContract, calcFeePerKb)
 from .transaction import atomic_swap_extract, deserialize, deserialize_witness, MsgTx, OutPoint, TxIn, TxOut
 from .script import extract_pkccript_addrs, ScriptType, pay_to_addr_script, unparse_script
 
@@ -49,7 +49,7 @@ def redeem(contract_str: str, contract_tx_str: str, secret_str: str, coind: Coin
         sc, addr = extract_pkccript_addrs(tx_out.pkscript, coind)
         if sc != ScriptType.ScriptHash:
             continue
-        _, addr_hash = b58_address_to_hash160(addr)
+        _, addr_hash = b58_address_to_hash160(addr, coind)
         if addr_hash == contract_hash160:
             contract_out = i
             break
@@ -79,4 +79,6 @@ def redeem(contract_str: str, contract_tx_str: str, secret_str: str, coind: Coin
     print("Redeem fee:", fee / 1e8, coind.unit, "(", redeem_fee_per_kb, coind.unit, "/KB )")
     print("Redeem transaction (", redeem_txhash.hex(), ")")
     print(redeem_tx.serialize_witness().hex())
+    if verify:
+        pass
     return redeem_tx

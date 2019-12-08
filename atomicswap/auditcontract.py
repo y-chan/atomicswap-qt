@@ -33,7 +33,7 @@ from datetime import datetime, timedelta
 from typing import Tuple
 
 
-def auditcontract(contract_str: str, contract_tx_str: str, coind: Coind) -> Tuple[bool, str, float]:
+def auditcontract(contract_str: str, contract_tx_str: str, coind: Coind, logging=True) -> Tuple[bool, str, float]:
     contract = binascii.a2b_hex(contract_str)
     try:
         contract_tx = deserialize_witness(contract_tx_str)
@@ -55,19 +55,20 @@ def auditcontract(contract_str: str, contract_tx_str: str, coind: Coind) -> Tupl
     contract_addr = hash160_to_b58_address(contract_hash160, coind.p2sh)
     recipient_addr = hash160_to_b58_address(pushes["recipient_addr_hash"], coind.p2pkh)
     refund_addr = hash160_to_b58_address(pushes["refund_addr_hash"], coind.p2pkh)
-    print("Contract address:", contract_addr)
-    print("Contract value:", contract_tx.tx_outs[contract_out].value / 1e8, coind.unit)
-    print("Recipient address:", recipient_addr)
-    print("Author's refund address:", refund_addr)
-    print("Secret hash:", pushes["secret_hash"].hex())
     now = int(time.mktime(datetime.now().timetuple()))
     locktime = pushes["locktime"]
     dt = datetime.fromtimestamp(locktime)
-    print("Locktime:", dt)
     reach_bool = locktime >= now
-    if reach_bool:
-        reach = timedelta(seconds=locktime-now)
-        print("Locktime reached in", reach)
-    else:
-        print("Contract refund time lock has expired")
+    if logging:
+        print("Contract address:", contract_addr)
+        print("Contract value:", contract_tx.tx_outs[contract_out].value / 1e8, coind.unit)
+        print("Recipient address:", recipient_addr)
+        print("Author's refund address:", refund_addr)
+        print("Secret hash:", pushes["secret_hash"].hex())
+        print("Locktime:", dt)
+        if reach_bool:
+            reach = timedelta(seconds=locktime-now)
+            print("Locktime reached in", reach)
+        else:
+            print("Contract refund time lock has expired")
     return reach_bool, pushes["secret_hash"].hex(), contract_tx.tx_outs[contract_out].value / 1e8
