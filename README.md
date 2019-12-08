@@ -9,7 +9,8 @@ Language: Python (>= 3.6)
 This is rewrite [decred/atomicswap](https://github.com/decred/atomicswap) by python3 and add gui by pyqt5.
 
 ### This software point
-* Full scratch(Only used standard library and PyQt5 library)
+* Full scratch base function
+* Only used standard library, pyqt5, requests and pyperclip.
 * Can use on the gui
 * Full compatible with [decred/atomicswap](https://github.com/decred/atomicswap)
 
@@ -18,7 +19,7 @@ Please run this command.
 ```
 git clone https://github.com/y-chan/atomicswap-qt
 cd atomicswap-qt
-python3 -m pip install pyqt5
+python3 -m pip install pyqt5 requests pyperclip
 ./run_atomicswap
 ```
 
