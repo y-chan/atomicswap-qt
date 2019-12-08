@@ -29,7 +29,7 @@ from .transaction import deserialize, deserialize_witness
 import binascii
 
 
-def extractsecret(redeem_tx_str: str, secret_hash_str: str, logging=True) -> str:
+def extractsecret(redeem_tx_str: str, secret_hash_str: str, logging=True) -> bytes:
     try:
         redeem_tx = deserialize_witness(redeem_tx_str)
     except:
@@ -43,5 +43,5 @@ def extractsecret(redeem_tx_str: str, secret_hash_str: str, logging=True) -> str
             if sha256(sig) == secret_hash:
                 if logging:
                     print("Secret:", sig.hex())
-                return sig.hex()
+                return sig
     raise Exception("Tx doesn't contain secret!")

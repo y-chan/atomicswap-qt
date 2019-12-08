@@ -49,7 +49,7 @@ class Coind:
         self.p2pkh = p2pkh
         self.p2sh = p2sh
         self.bech32_hrp = bech32_hrp
-        self.url = 'http://localhost:' + port
+        self.url = 'http://localhost:' + str(port)
         self.user = user
         self.pwd = pwd
         self.sign_wallet = sign_wallet

@@ -555,7 +555,7 @@ class AtomicSwapQt(QMainWindow):
             result = self.receive_coind.sendrawtransaction(self.receive_tx.serialize_witness().hex())
             assert result == self.receive_tx.get_txid().hex()
             self.redeem_result.setPlainText("Redeem Transaction: " +
-                                            self.recive_tx.serialize_witness().hex())
+                                            self.recieve_tx.serialize_witness().hex())
             self.back_button.setDisabled(True)
             if not self.initiate_flag:
                 self.button_widget.setCurrentIndex(2)

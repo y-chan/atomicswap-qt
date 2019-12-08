@@ -68,7 +68,7 @@ def redeem(contract_str: str, contract_tx_str: str, secret_str: str, coind: Coin
     value = contract_tx.tx_outs[contract_out].value - fee
     tx_out.change_params(value=value)
     if is_dust_output(tx_out, min_fee_per_kb):
-        raise RedeemError(f"refund output value of {value} is dust")
+        raise RedeemError(f"redeem output value of {value} is dust")
     redeem_tx.change_params(tx_out=tx_out)
     redeem_sig, redeem_pubkey = createSig(redeem_tx, 0, contract, recipient_addr, coind)
     redeem_sig_script = unparse_script(redeemP2SHContract(contract, redeem_sig, redeem_pubkey, secret))
@@ -76,7 +76,7 @@ def redeem(contract_str: str, contract_tx_str: str, secret_str: str, coind: Coin
     redeem_tx.change_params(tx_in=tx_in)
     redeem_txhash = redeem_tx.get_txid()
     redeem_fee_per_kb = "{:.8f}".format(calcFeePerKb(fee, redeem_tx.serialize_witness_size()))
-    print("Redeem fee:", fee / 1e8, coind.unit, "(", redeem_fee_per_kb, coind.unit, "/KB )")
+    print("Redeem fee:", fee / 1e8, coind.unit, "(", redeem_fee_per_kb, coind.unit + "/KB)")
     print("Redeem transaction (", redeem_txhash.hex(), ")")
     print(redeem_tx.serialize_witness().hex())
     if verify:
