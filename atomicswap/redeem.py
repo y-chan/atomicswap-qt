@@ -76,8 +76,8 @@ def redeem(contract_str: str, contract_tx_str: str, secret_str: str, coind: Coin
     redeem_tx.change_params(tx_in=tx_in)
     redeem_txhash = redeem_tx.get_txid()
     redeem_fee_per_kb = "{:.8f}".format(calcFeePerKb(fee, redeem_tx.serialize_witness_size()))
-    print("Redeem fee:", fee / 1e8, coind.unit, "(", redeem_fee_per_kb, coind.unit + "/KB)")
-    print("Redeem transaction (", redeem_txhash.hex(), ")")
+    print("Redeem fee:", fee / 1e8, coind.unit, "(" + redeem_fee_per_kb, coind.unit + "/KB)")
+    print("Redeem transaction (" + redeem_txhash.hex() + ")")
     print(redeem_tx.serialize_witness().hex())
     if verify:
         pass
