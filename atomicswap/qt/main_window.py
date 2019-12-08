@@ -153,7 +153,7 @@ class AtomicSwapQt(QMainWindow):
         self.back_button_1.hide()
         self.back_button_1.clicked.connect(self.back_page)
         self.finish_button.clicked.connect(qApp.quit)
-        self.button_widget.addWidget(self.finish_button_button_widget)
+        self.button_widget.addWidget(self.finish_button_widget)
 
         # initiate and participate window
         self.ip = QWidget(self.main_widget)
