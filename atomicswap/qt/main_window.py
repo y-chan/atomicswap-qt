@@ -512,8 +512,8 @@ class AtomicSwapQt(QMainWindow):
                                                  QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
             if send_question == QMessageBox.No:
                 return
-            # result = self.send_coind.sendrawtransaction(self.send_contract_tuple.contractTx.serialize_witness().hex())
-            # assert result == self.send_contract_tuple.contractTxHash.hex()
+            result = self.send_coind.sendrawtransaction(self.send_contract_tuple.contractTx.serialize_witness().hex())
+            assert result == self.send_contract_tuple.contractTxHash.hex()
             self.contract_result.setPlainText("Contract: " + self.send_contract_tuple.contract.hex())
             self.contract_result.append("Contract Transaction: " +
                                         self.send_contract_tuple.contractTx.serialize_witness().hex())
@@ -552,8 +552,8 @@ class AtomicSwapQt(QMainWindow):
                                                  QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
             if send_question == QMessageBox.No:
                 return
-            # result = self.receive_coind.sendrawtransaction(self.receive_tx.serialize_witness().hex())
-            # assert result == self.receive_tx.get_txid().hex()
+            result = self.receive_coind.sendrawtransaction(self.receive_tx.serialize_witness().hex())
+            assert result == self.receive_tx.get_txid().hex()
             self.redeem_result.setPlainText("Contract: " + self.send_contract_tuple.contract.hex())
             self.redeem_result.append("Contract Transaction: " +
                                       self.send_contract_tuple.contractTx.serialize_witness().hex())
