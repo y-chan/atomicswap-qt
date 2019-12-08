@@ -1,0 +1,9 @@
+{
+  "name": "Sugarchain",
+  "unit": "SUGAR",
+  "p2pkh": 63,
+  "p2sh": 125,
+  "bech32_hrp": "sugar",
+  "req_ver": 170000,
+  "port": 34229
+}
