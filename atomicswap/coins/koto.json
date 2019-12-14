@@ -12,5 +12,6 @@
   "bech32_hrp": "koto",
   "req_ver": 99999999,
   "port": 8432,
-  "tx_ver": 1
+  "tx_ver": 4,
+  "ver_id": 2418271498
 }

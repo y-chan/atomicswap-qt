@@ -31,9 +31,9 @@ import binascii
 def refund(contracr_str: str, contract_tx_str: str, coind: Coind) -> MsgTx:
     contract = binascii.a2b_hex(contracr_str)
     try:
-        contract_tx = deserialize_witness(contract_tx_str)
+        contract_tx = deserialize_witness(contract_tx_str, coind)
     except:
-        contract_tx = deserialize(contract_tx_str)
+        contract_tx = deserialize(contract_tx_str, coind)
     atomic_swap_extract(contract)
     fee_per_kb, min_fee_per_kb = coind.get_fee_per_byte()
     unparsed_contract = parse_script(contract)

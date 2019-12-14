@@ -36,9 +36,9 @@ from typing import Tuple
 def auditcontract(contract_str: str, contract_tx_str: str, coind: Coind, logging=True) -> Tuple[bool, bytes, float]:
     contract = binascii.a2b_hex(contract_str)
     try:
-        contract_tx = deserialize_witness(contract_tx_str)
+        contract_tx = deserialize_witness(contract_tx_str, coind)
     except:
-        contract_tx = deserialize(contract_tx_str)
+        contract_tx = deserialize(contract_tx_str, coind)
     contract_hash160 = hash160(contract)
     contract_out = -1
     for i, tx_out in enumerate(contract_tx.tx_outs):

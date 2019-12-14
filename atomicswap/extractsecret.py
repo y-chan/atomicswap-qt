@@ -23,17 +23,18 @@
 
 from .address import sha256
 from .contract import secretSize
+from .coind import Coind
 from .script import parse_script
 from .transaction import deserialize, deserialize_witness
 
 import binascii
 
 
-def extractsecret(redeem_tx_str: str, secret_hash_str: str, logging=True) -> bytes:
+def extractsecret(redeem_tx_str: str, secret_hash_str: str, coind: Coind, logging=True) -> bytes:
     try:
-        redeem_tx = deserialize_witness(redeem_tx_str)
+        redeem_tx = deserialize_witness(redeem_tx_str, coind)
     except:
-        redeem_tx = deserialize(redeem_tx_str)
+        redeem_tx = deserialize(redeem_tx_str, coind)
     secret_hash = binascii.a2b_hex(secret_hash_str)
     assert len(secret_hash) == secretSize, "SecretHash is miss!"
     for tx_in in redeem_tx.tx_ins:

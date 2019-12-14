@@ -26,6 +26,7 @@ from typing import Tuple, Union
 import binascii
 
 from .address import sha256d
+from .coind import Coind
 from .script import unparse_script, parse_script
 from .opcodes import opcodes
 
@@ -73,13 +74,17 @@ class TxIn:
         self.change_flag = True
         self.change_witness_flag = True
 
-    def serialize(self) -> bytes:
+    def serialize(self, with_sig=True) -> bytes:
         if self.change_flag:
             self.serialized_bytes = self.prev_op.serialize()
             self.serialized_bytes = int_to_bytes(len(self.sig_script), self.serialized_bytes)
             self.serialized_bytes += self.sig_script
             self.serialized_bytes += self.sequence.to_bytes(4, 'little')
             self.change_flag = False
+        if not with_sig:
+            serialized_bytes = self.prev_op.serialize()
+            serialized_bytes += self.sequence.to_bytes(4, 'little')
+            return serialized_bytes
         return self.serialized_bytes
 
     def serialize_witness(self) -> bytes:
@@ -158,25 +163,32 @@ class TxOut:
 
 
 class MsgTx:
-    def __init__(self, version: int, tx_in: Union[TxIn, list], tx_out: Union[TxOut, list], locktime: int):
-        self.version = version
+    def __init__(self, coind: Coind, tx_in: Union[TxIn, list],
+                 tx_out: Union[TxOut, list], locktime: int, expiry_height=0):
+        self.version = coind.tx_version
         self.tx_ins = [tx_in] if isinstance(tx_in, TxIn) else tx_in
         self.tx_outs = [tx_out] if isinstance(tx_out, TxOut) else tx_out
         self.locktime = locktime
+        self.expiry_height = expiry_height
+        self.coind = coind
         self.serialized_bytes = b''
         self.serialized_witness_bytes = b''
         self.change_flag = True
         self.change_witness_flag = True
 
-    def serialize(self, witness=False) -> bytes:
+    def serialize(self, witness=False, with_sig=True) -> bytes:
         if self.change_flag or self.change_witness_flag:
             serialized_bytes = self.version.to_bytes(4, 'little')
+            if self.coind.ver_id:
+                header = self.version + 0x80000000
+                serialized_bytes = header.to_bytes(4, 'little')
+                serialized_bytes += self.coind.ver_id.to_bytes(4, 'little')
             do_witness = witness and self.has_witness()
             if do_witness:
                 serialized_bytes += b'\x00\x01'  # Witness Marker
             serialized_bytes = int_to_bytes(len(self.tx_ins), serialized_bytes)
             for tx_in in self.tx_ins:
-                serialized_bytes += tx_in.serialize()
+                serialized_bytes += tx_in.serialize(with_sig=with_sig)
             serialized_bytes = int_to_bytes(len(self.tx_outs), serialized_bytes)
             for tx_out in self.tx_outs:
                 serialized_bytes += tx_out.serialize()
@@ -184,6 +196,10 @@ class MsgTx:
                 for tx_in in self.tx_ins:
                     serialized_bytes += tx_in.serialize_witness()
             serialized_bytes += self.locktime.to_bytes(4, 'little')
+            if self.coind.ver_id:
+                serialized_bytes += self.expiry_height.to_bytes(4, 'little')
+                sapling_raw = b'\x00' * (8 + 1 + 1 + 1) # ValueBalance + spend + output + joinsplits
+                serialized_bytes += sapling_raw
             if witness:
                 self.change_witness_flag = False
                 self.serialized_witness_bytes = serialized_bytes
@@ -198,6 +214,8 @@ class MsgTx:
         return self.serialize(True)
 
     def serialize_size(self):
+        if self.coind.ver_id:
+            return len(self.serialize(with_sig=False))
         return len(self.serialize())
 
     def serialize_witness_size(self):
@@ -221,9 +239,7 @@ class MsgTx:
         self.change_flag = True
         self.change_witness_flag = True
 
-    def change_params(self, version=None, tx_in=None, tx_out=None, locktime=None):
-        if isinstance(version, int):
-            self.version = version
+    def change_params(self, tx_in=None, tx_out=None, locktime=None):
         if isinstance(tx_in, list):
             invalid = False
             for tx in tx_in:
@@ -244,12 +260,14 @@ class MsgTx:
             self.tx_outs = [tx_out]
         if isinstance(locktime, int):
             self.locktime = locktime
-        if isinstance(version, int) or isinstance(tx_in, list) or isinstance(tx_in, TxIn) or \
-                isinstance(tx_out, list) or isinstance(tx_out, TxOut) or isinstance(locktime, int):
+        if isinstance(tx_in, list) or isinstance(tx_in, TxIn) or isinstance(tx_out, list) \
+                or isinstance(tx_out, TxOut) or isinstance(locktime, int):
             self.change_flag = True
             self.change_witness_flag = True
 
     def get_txid(self) -> bytes:
+        if self.coind.ver_id:
+            return sha256d(self.serialize(with_sig=False))[::-1]
         return sha256d(self.serialize())[::-1]
 
     def get_txhash(self) -> bytes:
@@ -263,17 +281,24 @@ class MsgTx:
             tx_ins.append(tx_in.show())
         for tx_out in self.tx_outs:
             tx_outs.append(tx_out.show())
-        return {"txid": self.get_txid().hex(),
-                "txhash": self.get_txhash().hex(),
-                "version": self.version,
-                "locktime": self.locktime,
-                "vin": tx_ins,
-                "vout": tx_outs}
+        result = {"txid": self.get_txid().hex(),
+                  "txhash": self.get_txhash().hex(),
+                  "version": self.version,
+                  "locktime": self.locktime,
+                  "vin": tx_ins,
+                  "vout": tx_outs}
+        if self.expiry_height:
+            result["expiry_height"] = self.expiry_height
+        return result
 
 
-def deserialize(tx_hex: str, witness=False) -> MsgTx:
+def deserialize(tx_hex: str, coind: Coind, witness=False) -> MsgTx:
     tx_bytes = binascii.a2b_hex(tx_hex)
     version, tx_bytes = read_int(tx_bytes, 4)
+    if coind.ver_id:
+        version = version & 0x7fffffff
+        ver_id, tx_bytes = read_int(tx_bytes, 4)
+        assert ver_id == coind.ver_id
     count, tx_bytes = read_ver_int(tx_bytes)
     flag = 0
     if count == 0 and witness:
@@ -311,13 +336,19 @@ def deserialize(tx_hex: str, witness=False) -> MsgTx:
                 tx_witness.append(tx)
             tx_in.change_params(witness=tx_witness)
     locktime, tx_bytes = read_int(tx_bytes, 4)
+    if coind.ver_id:
+        expiry_height, tx_bytes = read_int(tx_bytes, 4)
+        assert tx_bytes == b'\x00' * (8 + 1 + 1 + 1) # Sapling Raw: ValueBalance + spend + output + joinsplits
+        tx_bytes = b''
+    else:
+        expiry_height = 0
     assert tx_bytes == b''
-    msg_tx = MsgTx(version, tx_ins, tx_outs, locktime)
-    return msg_tx
+    assert coind.tx_version == version
+    return MsgTx(coind, tx_ins, tx_outs, locktime, expiry_height)
 
 
-def deserialize_witness(tx_hex: str) -> MsgTx:
-    return deserialize(tx_hex, True)
+def deserialize_witness(tx_hex: str, coind: Coind) -> MsgTx:
+    return deserialize(tx_hex, coind, True)
 
 
 def read_ver_int(byte: bytes) -> Tuple:

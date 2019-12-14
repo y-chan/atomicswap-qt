@@ -77,13 +77,17 @@ def buildContract(contract: contractTuple, coind: Coind) -> builtTuple:
     script_bytes = unparse_script(p2sh_script)
     fee_per_kb, min_fee_per_kb = coind.get_fee_per_byte()
     new_output = TxOut(contract.amount, script_bytes)
-    unsigned_contract = MsgTx(coind.tx_version, [], new_output, 0)
+    if coind.ver_id:
+        expiry_height = coind.getblockcount() + 20
+    else:
+        expiry_height = 0
+    unsigned_contract = MsgTx(coind, [], new_output, 0, expiry_height)
     fund_params = {"hex": unsigned_contract.serialize().hex(), "fee": fee_per_kb / 1e8}
     fund_result = coind.fundrawtransaction(fund_params)
     funded_contract = fund_result["hex"]
     contract_fee = int(fund_result["fee"] * 1e8)
     signed_contract = coind.signrawtransaction(funded_contract)["hex"]
-    contract_tx = deserialize_witness(signed_contract)
+    contract_tx = deserialize_witness(signed_contract, coind)
     contract_txhash = contract_tx.get_txid()
     refund_tx, refund_fee = buildRefund(atomic_swap_contract, contract_tx,
                                         coind, fee_per_kb, min_fee_per_kb)
@@ -112,7 +116,11 @@ def buildRefund(contract: list, contract_tx: MsgTx, coind: Coind,
     refund_script_bytes = unparse_script(refund_script)
     pushes = atomic_swap_extract(contract)
     refund_addr = hash160_to_b58_address(pushes["refund_addr_hash"], coind.p2pkh)
-    refund_tx = MsgTx(coind.tx_version, [], [], pushes["locktime"])
+    if coind.ver_id:
+        expiry_height = coind.getblockcount() + 10000
+    else:
+        expiry_height = 0
+    refund_tx = MsgTx(coind, [], [], pushes["locktime"], expiry_height)
     tx_out = TxOut(0, refund_script_bytes)
     refund_size = estimateRefundSerializeSize(contract, [tx_out])
     refund_fee = fee_for_serialize_size(fee_per_kb, refund_size)

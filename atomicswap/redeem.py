@@ -38,9 +38,9 @@ def redeem(contract_str: str, contract_tx_str: str, secret_str: str, coind: Coin
     contract = binascii.a2b_hex(contract_str)
     secret = binascii.a2b_hex(secret_str)
     try:
-        contract_tx = deserialize_witness(contract_tx_str)
+        contract_tx = deserialize_witness(contract_tx_str, coind)
     except:
-        contract_tx = deserialize(contract_tx_str)
+        contract_tx = deserialize(contract_tx_str, coind)
     pushes = atomic_swap_extract(contract)
     recipient_addr = hash160_to_b58_address(pushes["recipient_addr_hash"], coind.p2pkh)
     contract_hash160 = hash160(contract)
@@ -62,7 +62,11 @@ def redeem(contract_str: str, contract_tx_str: str, secret_str: str, coind: Coin
     fee_per_kb, min_fee_per_kb = coind.get_fee_per_byte()
     tx_in = TxIn(contract_outpoint, b'', [], 0xffffffff)
     tx_out = TxOut(0, unparse_script(out_script))
-    redeem_tx = MsgTx(coind.tx_version, tx_in, tx_out, pushes["locktime"])
+    if coind.ver_id:
+        expiry_height = coind.getblockcount() + 20
+    else:
+        expiry_height = 0
+    redeem_tx = MsgTx(coind, tx_in, tx_out, pushes["locktime"], expiry_height)
     redeem_size = estimateRedeemSerializeSize(contract, redeem_tx.tx_outs)
     fee = fee_for_serialize_size(fee_per_kb, redeem_size)
     value = contract_tx.tx_outs[contract_out].value - fee

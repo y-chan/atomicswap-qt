@@ -42,8 +42,8 @@ class RestartWallet(Exception): pass
 
 
 class Coind:
-    def __init__(self, name: str, unit: str, p2pkh: Union[int, list], p2sh: Union[int, list],
-                 bech32_hrp: str, port: int, user: str, pwd: str, sign_wallet: bool, tx_version=2):
+    def __init__(self, name: str, unit: str, p2pkh: Union[int, list], p2sh: Union[int, list], bech32_hrp: str,
+                 port: int, user: str, pwd: str, sign_wallet: bool, tx_version=2, ver_id=0):
         self.name = name
         self.unit = unit
         self.p2pkh = p2pkh
@@ -54,6 +54,7 @@ class Coind:
         self.pwd = pwd
         self.sign_wallet = sign_wallet
         self.tx_version = tx_version
+        self.ver_id = ver_id
 
     def getrawchangeaddress(self) -> str:
         data = '{"jsonrpc":"1.0","id":"curltext","method":"getrawchangeaddress","params":["legacy"]}'
@@ -110,7 +111,7 @@ class Coind:
             raise InvalidRPCError(result["error"]["message"])
         return tx_dict
 
-    def info(self, method: str) -> dict:
+    def info(self, method: str) -> Union[dict, str]:
         data = '{"jsonrpc":"1.0","id":"curltext","method":"%s","params":[]}' % method
         result = json.loads(requests.post(self.url, headers=headers, data=data, auth=(self.user, self.pwd)).text)
         info = result["result"]
@@ -129,6 +130,9 @@ class Coind:
 
     def getnetworkinfo(self) -> dict:
         return self.info("getnetworkinfo")
+
+    def getblockcount(self) -> int:
+        return int(self.info("getblockcount"))
 
     def estimatesmartfee(self, blocks=6) -> dict:
         data = '{"jsonrpc":"1.0","id":"curltext","method":"estimatesmartfee","params":[%s]}' % blocks
@@ -219,9 +223,13 @@ def make_coin_data(path: str, coin: str) -> Tuple[int, Coind]:
     except GetConfigError:
         make_conf()
     try:
-        coind = Coind(coin_json["name"], coin_json["unit"], coin_json["p2pkh"],
-                      coin_json["p2sh"], coin_json["bech32_hrp"], port, user, pwd, False, coin_json["tx_ver"])
+        tx_ver = coin_json["tx_ver"]
     except KeyError:
-        coind = Coind(coin_json["name"], coin_json["unit"], coin_json["p2pkh"],
-                      coin_json["p2sh"], coin_json["bech32_hrp"], port, user, pwd, False)
+        tx_ver = 2
+    try:
+        ver_id = coin_json["ver_id"]
+    except KeyError:
+        ver_id = 0
+    coind = Coind(coin_json["name"], coin_json["unit"], coin_json["p2pkh"], coin_json["p2sh"],
+                  coin_json["bech32_hrp"], port, user, pwd, False, tx_ver, ver_id)
     return coin_json["req_ver"], coind
