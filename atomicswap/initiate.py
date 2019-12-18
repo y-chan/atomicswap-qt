@@ -32,6 +32,7 @@ from typing import Tuple
 
 
 def initiate(addr: str, amount: int, coind: Coind) -> Tuple[bytes, builtTuple]:
+    assert is_p2pkh(addr, coind)
     secret = secrets.token_bytes(secretSize)
     secret_hash = sha256(secret)
     locktime = int(time.mktime(datetime.now().timetuple())) + 48 * 60 * 60

@@ -41,8 +41,8 @@ def refund(contracr_str: str, contract_tx_str: str, coind: Coind) -> MsgTx:
     refund_tx, refund_fee = buildRefund(mixed_contract, contract_tx,
                                         coind, fee_per_kb, min_fee_per_kb)
     refund_txhash = refund_tx.get_txid()
-    refund_fee_per_kb = calcFeePerKb(refund_fee, refund_tx.serialize_witness_size())
-    print("Refund fee:", refund_fee, coind.unit, "(" + str(refund_fee_per_kb), coind.unit + "/KB)")
-    print("Refund transaction(" +  refund_txhash.hex() + ")")
-    print(refund_tx.serialize_witness())
+    refund_fee_per_kb = "{:.8f}".format(calcFeePerKb(refund_fee, refund_tx.serialize_witness_size()))
+    print("Refund fee:", refund_fee / 1e8, coind.unit, "(" + refund_fee_per_kb, coind.unit + "/KB)")
+    print("Refund transaction(" + refund_txhash.hex() + ")")
+    print(refund_tx.serialize_witness().hex())
     return refund_tx

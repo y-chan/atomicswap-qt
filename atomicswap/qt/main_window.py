@@ -399,7 +399,7 @@ class AtomicSwapQt(QMainWindow):
             try:
                 extractsecret(self.redeem_tx.text().strip(),
                               self.secret_hash.hex(),
-                              self.receive_coind,
+                              self.send_coind,
                               False)
                 self.redeem_tx_status_label.setText("Transaction is Ok")
             except:
@@ -531,7 +531,7 @@ class AtomicSwapQt(QMainWindow):
                 try:
                     self.secret = extractsecret(self.redeem_tx.text().strip(),
                                                 self.secret_hash.hex(),
-                                                self.receive_coind)
+                                                self.send_coind)
                     self.receive_tx = redeem(self.contract_box.text().strip(),
                                              self.contract_tx_box.text().strip(),
                                              self.secret.hex(),

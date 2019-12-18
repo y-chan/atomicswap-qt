@@ -21,6 +21,7 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from .address import is_p2pkh
 from .coind import Coind
 from .contract import buildContract, contractTuple, calcFeePerKb, builtTuple
 
@@ -30,6 +31,7 @@ from datetime import datetime
 
 
 def participate(addr: str, amount: int, secret_hash: str, coind: Coind) -> builtTuple:
+    assert is_p2pkh(addr, coind)
     secret_hash = binascii.a2b_hex(secret_hash)
     locktime = int(time.mktime(datetime.now().timetuple())) + 24 * 60 * 60
     contract = contractTuple(addr, amount, locktime, secret_hash)

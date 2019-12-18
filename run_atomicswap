@@ -33,7 +33,7 @@ import platform
 from PyQt5.QtWidgets import QApplication
 
 from atomicswap.qt.main_window import AtomicSwapQt
-
+from atomicswap.command import command
 
 def get_path() -> str:
     os_name = platform.system()
@@ -47,9 +47,36 @@ def get_path() -> str:
         raise Exception("Your using OS isn't support!")
     return path
 
-
-if __name__ == '__main__':
-    path = get_path()
+def qt_window(path: str):
     app = QApplication(sys.argv)
     ex = AtomicSwapQt(path)
     sys.exit(app.exec_())
+
+if __name__ == '__main__':
+    argv = sys.argv
+    path = get_path()
+    if len(argv) >= 2:
+        qc = argv[1]
+        qc = qc.lower()
+        if qc == "command":
+            try:
+                cmd = argv[2]
+                cmd = cmd.lower()
+            except:
+                command(path, "help", [])
+                exit()
+            try:
+                params = argv[3:]
+            except:
+                command(path, "help", [])
+                exit()
+            command(path, cmd, params)
+        elif qc == "help":
+            command(path, qc, [])
+        elif qc == "qt" or qc == "gui":
+            qt_window(path)
+        else:
+            print(f"Invalid command: {qc}")
+            command(path, "help", [])
+    else:
+        qt_window(path)
