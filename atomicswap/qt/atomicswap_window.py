@@ -21,11 +21,10 @@
 # SOFTWARE.
 
 from PyQt5.QtWidgets import (QMainWindow, QWidget, QPushButton, QDesktopWidget, QHBoxLayout,
-                             QTextEdit, qApp, QAction, QLineEdit, QComboBox, QLabel,
-                             QVBoxLayout, QDialog, QButtonGroup, QRadioButton, QStackedWidget,
-                             QMessageBox)
-from PyQt5.QtGui import QIcon, QPixmap, QDoubleValidator
-from PyQt5.QtCore import pyqtSlot, Qt
+                             QTextEdit, qApp, QLineEdit, QComboBox, QLabel, QVBoxLayout,
+                             QButtonGroup, QRadioButton, QStackedWidget, QMessageBox)
+from PyQt5.QtGui import QPixmap, QDoubleValidator
+from PyQt5.QtCore import Qt
 
 from pyperclip import copy
 

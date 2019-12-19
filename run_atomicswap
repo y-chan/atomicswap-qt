@@ -31,8 +31,9 @@ import sys
 import platform
 
 from PyQt5.QtWidgets import QApplication
+from PyQt5.QtGui import QIcon
 
-from atomicswap.qt.main_window import AtomicSwapQt
+from atomicswap.qt.atomicswap_window import AtomicSwapQt
 from atomicswap.command import command
 
 def get_path() -> str:
@@ -49,7 +50,8 @@ def get_path() -> str:
 
 def qt_window(path: str):
     app = QApplication(sys.argv)
-    ex = AtomicSwapQt(path)
+    app.setWindowIcon(QIcon('atomicswap/qt/icons/icons8-swap.png'))
+    AtomicSwapQt(path)
     sys.exit(app.exec_())
 
 if __name__ == '__main__':
