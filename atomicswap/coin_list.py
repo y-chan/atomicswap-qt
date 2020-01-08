@@ -25,7 +25,7 @@ coin_list = [
   "Litecoin",
   "Monacoin",
   "BitZeny",
-  "Koto",
+#  "Koto",
   "VIPSTARCOIN",
   "Bellcoin",
   "Sugarchain"
