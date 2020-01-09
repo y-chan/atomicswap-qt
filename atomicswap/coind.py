@@ -20,6 +20,7 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import os
 import json
 import requests
 import platform
@@ -170,19 +171,27 @@ class Coind:
 def make_coin_data(path: str, coin: str) -> Tuple[int, Coind]:
     os_name = platform.system()
     low = coin.lower()
+
     conf_path = '/' + low + '.conf'
     if "Testnet" in coin:
         low, testnet = low.split()
         conf_path = '/' + testnet + '/' + low + '.conf'
         with open(coins + low + '_' + testnet + '.json') as f:
             coin_json = json.loads(f.read())
+
     else:
         with open(coins + low + '.json') as f:
             coin_json = json.loads(f.read())
-    if os_name == 'Linux':
-        conf_full_path = path + low + conf_path
+
+    if 'path' in coin_json:
+        conf_full_path = os.path.expanduser(coin_json['path'][os_name])
+
     else:
-        conf_full_path = path + coin + conf_path
+        if os_name == 'Linux':
+            conf_full_path = path + low + conf_path
+
+        else:
+            conf_full_path = path + coin + conf_path
 
     def make_conf():
         with open(conf_full_path, mode='w') as f:
