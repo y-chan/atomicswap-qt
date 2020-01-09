@@ -33,15 +33,25 @@ import platform
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtGui import QIcon
 
-from atomicswap.qt.main_window import MainWindow
+from atomicswap.qt.atomicswap_window import AtomicSwapQt
 from atomicswap.command import command
-from atomicswap.util import resource_path, get_path
 
+def get_path() -> str:
+    os_name = platform.system()
+    if os_name == 'Windows':
+        path = os.path.expanduser('~/AppData/Roaming/')
+    elif os_name == 'Darwin':
+        path = os.path.expanduser('~/Library/Application Support/')
+    elif os_name == 'Linux':
+        path = os.path.expanduser('~/')
+    else:
+        raise Exception("Your using OS isn't support!")
+    return path
 
 def qt_window(path: str):
     app = QApplication(sys.argv)
-    app.setWindowIcon(QIcon(resource_path('qt', 'icons', 'icons8-swap.png')))
-    ex = MainWindow(path)
+    app.setWindowIcon(QIcon('atomicswap/qt/icons/icons8-swap.png'))
+    AtomicSwapQt(path)
     sys.exit(app.exec_())
 
 if __name__ == '__main__':
