@@ -1,0 +1,14 @@
+{
+	"name": "MicroBitcoin",
+	"unit": "MBC",
+	"p2pkh": 26,
+	"p2sh": 51,
+	"bech32_hrp": "mbc",
+	"req_ver": 99999999,
+	"port": 6501,
+	"path": {
+		"Windows": "~/AppData/Roaming/Micro/microbitcoin.conf",
+		"Darwin": "~/.micro/microbitcoin.conf",
+		"Linux": "~/.micro/microbitcoin.conf"
+	}
+}
