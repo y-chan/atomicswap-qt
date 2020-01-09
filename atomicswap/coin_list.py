@@ -28,5 +28,6 @@ coin_list = [
 #  "Koto",
   "VIPSTARCOIN",
   "Bellcoin",
-  "Sugarchain"
+  "Sugarchain",
+  "MicroBitcoin"
 ]
