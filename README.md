@@ -19,7 +19,7 @@ Please run this command.
 ```
 git clone https://github.com/y-chan/atomicswap-qt
 cd atomicswap-qt
-python3 -m pip install pyqt5 requests pyperclip
+pip3 install -r requirements.txt
 ./run_atomicswap
 ```
 
