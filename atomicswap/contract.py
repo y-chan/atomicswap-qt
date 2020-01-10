@@ -82,8 +82,9 @@ def buildContract(contract: contractTuple, coind: Coind) -> builtTuple:
     else:
         expiry_height = 0
     unsigned_contract = MsgTx(coind, [], new_output, 0, expiry_height)
-    fund_params = {"hex": unsigned_contract.serialize().hex(), "fee": fee_per_kb / 1e8}
-    fund_result = coind.fundrawtransaction(fund_params)
+    fund_hex = unsigned_contract.serialize().hex()
+    fund_fee = fee_per_kb / 1e8
+    fund_result = coind.fundrawtransaction(fund_hex, fund_fee)
     funded_contract = fund_result["hex"]
     contract_fee = int(fund_result["fee"] * 1e8)
     signed_contract = coind.signrawtransaction(funded_contract)["hex"]
