@@ -7,8 +7,8 @@
 	"req_ver": 99999999,
 	"port": 6501,
 	"path": {
-		"Windows": "~/AppData/Roaming/Micro/microbitcoin.conf",
-		"Darwin": "~/.micro/microbitcoin.conf",
-		"Linux": "~/.micro/microbitcoin.conf"
+		"Windows": "~/AppData/Roaming/Micro/micro.conf",
+		"Darwin": "~/.micro/micro.conf",
+		"Linux": "~/.micro/micro.conf"
 	}
 }
