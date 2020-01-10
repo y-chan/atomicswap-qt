@@ -231,14 +231,15 @@ def make_coin_data(path: str, coin: str) -> Tuple[int, Coind]:
         make_conf()
     except GetConfigError:
         make_conf()
-    try:
+
+    tx_ver = 2
+    ver_id = 0
+    if 'tx_ver' in coin_json:
         tx_ver = coin_json["tx_ver"]
-    except KeyError:
-        tx_ver = 2
-    try:
+
+    if 'ver_id' in coin_json:
         ver_id = coin_json["ver_id"]
-    except KeyError:
-        ver_id = 0
+
     coind = Coind(coin_json["name"], coin_json["unit"], coin_json["p2pkh"], coin_json["p2sh"],
                   coin_json["bech32_hrp"], port, user, pwd, False, tx_ver, ver_id)
     return coin_json["req_ver"], coind

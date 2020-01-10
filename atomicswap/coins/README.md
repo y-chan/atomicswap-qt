@@ -38,8 +38,10 @@ I present the procedure.
     * `tx_ver` params (optional)  
       Tx Version. Default is "2". If coin can't use "2", please set number.
       For example, Koto needs set "4".
-    * `ver_id` params (optional)
+    * `ver_id` params (optional)  
       Version Group Id. Koto needs this params.
+    * `path` params (optional)  
+      Custom coin directory path. For Example, MicroBitcoin needs this params.  
 * 2, Add coin icon to this folder.
   Please add coin icon.(png or jpg)
 * 3, Add coin name to coin_list
