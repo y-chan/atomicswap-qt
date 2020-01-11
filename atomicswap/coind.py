@@ -94,6 +94,19 @@ class Coind:
     def getblockcount(self) -> int:
         return int(self.simple_request('getblockcount'))
 
+    def getnewaddress(self) -> str:
+        result = self.make_request('getnewaddress', ['', 'legacy'])
+        address = result['result']
+
+        if address is None:
+            result = self.make_request('getnewaddress')
+            address = result['result']
+
+            if address is None:
+                raise InvalidRPCError(result['error']['message'])
+
+        return address
+
     def getrawchangeaddress(self) -> str:
         result = self.make_request('getrawchangeaddress', ['legacy'])
         address = result['result']

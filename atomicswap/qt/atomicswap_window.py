@@ -64,6 +64,7 @@ class AtomicSwapWindow(QMainWindow):
         self.initiate_flag = False
         self.secret = b""
         self.secret_hash = b""
+        self.my_address = ""
         self.send_contract_tuple = None
         self.receive_tx = None
         self.main_window = QWidget(self)
@@ -193,6 +194,15 @@ class AtomicSwapWindow(QMainWindow):
         self.ip_widget.addWidget(self.initiate_widget)
         self.participate_widget = QWidget()
         self.participate_vbox = QVBoxLayout(self.participate_widget)
+        self.address_hbox = QHBoxLayout()
+        self.my_address_label = QLabel()
+        self.address_copy_button = QPushButton("Copy")
+        self.address_hbox.addWidget(self.my_address_label)
+        self.address_hbox.addStretch(1)
+        self.address_hbox.addWidget(self.address_copy_button)
+        self.address_copy_button.clicked.connect(lambda: copy(self.my_address))
+        self.my_address_box = QLineEdit(self)
+        self.my_address_box.setReadOnly(True)
         self.contract_status_label = QLabel("Contract isn't Ok")
         self.contract_label = QLabel("Contract")
         self.contract_box = QLineEdit(self)
@@ -209,6 +219,8 @@ class AtomicSwapWindow(QMainWindow):
         self.p_amount_box.setValidator(QDoubleValidator(0, 999999999999, 8))
         self.p_amount_box.textEdited.connect(self.ip_edited)
         self.participate_vbox.addWidget(self.p_label)
+        self.participate_vbox.addLayout(self.address_hbox)
+        self.participate_vbox.addWidget(self.my_address_box)
         self.participate_vbox.addWidget(self.contract_status_label)
         self.participate_vbox.addWidget(self.contract_label)
         self.participate_vbox.addWidget(self.contract_box)
@@ -498,6 +510,10 @@ class AtomicSwapWindow(QMainWindow):
                                  f"{self.send_coind.name} address and send amount.")
             self.i_addr_label.setText(f"{self.send_coind.name} address")
             self.p_addr_label.setText(f"{self.send_coind.name} address")
+            self.my_address_label.setText(f"My {self.receive_coin_name} address" +
+                                          "(" + "Please copy and send to your trading partner." + ")")
+            self.my_address = self.receive_coind.getnewaddress()
+            self.my_address_box.setText(self.my_address)
             self.button_widget.setCurrentIndex(1)
         elif page_number == 1:
             if self.initiate_flag:
@@ -536,9 +552,15 @@ class AtomicSwapWindow(QMainWindow):
             if result != self.send_contract_tuple.contractTxHash.hex():
                 QMessageBox.critical(self, 'Error', 'Fatal problem has occurred!' + '\n' + "Transaction is missing!",
                                      QMessageBox.Ok, QMessageBox.Ok)
-            self.contract_result.setPlainText("Contract: " + self.send_contract_tuple.contract.hex())
-            self.contract_result.append("Contract Transaction: " +
-                                        self.send_contract_tuple.contractTx.serialize_witness().hex())
+            if self.initiate_flag:
+                self.contract_result.setPlainText(f"{self.receive_coin_name} Address: " + self.my_address)
+                self.contract_result.append("Contract: " + self.send_contract_tuple.contract.hex())
+                self.contract_result.append("Contract Transaction: " +
+                                            self.send_contract_tuple.contractTx.serialize_witness().hex())
+            else:
+                self.contract_result.setPlainText("Contract: " + self.send_contract_tuple.contract.hex())
+                self.contract_result.append("Contract Transaction: " +
+                                            self.send_contract_tuple.contractTx.serialize_witness().hex())
             self.back_button.setDisabled(True)
             self.db_set_data(self.make_db_data(0))
         elif page_number == 2:
