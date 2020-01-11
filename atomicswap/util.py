@@ -1,5 +1,5 @@
-# Copyright (c) 2011-2019 The Electrum Develoers
-# Copyright (c) 2019 The atomicswap-qt developers
+# Copyright (c) 2011-2020 The Electrum Developers
+# Copyright (c) 2019-2020 The atomicswap-qt developers
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files

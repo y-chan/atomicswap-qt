@@ -1,4 +1,4 @@
-# Copyright (c) 2019 The atomicswap-qt developers
+# Copyright (c) 2019-2020 The atomicswap-qt developers
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -155,6 +155,10 @@ class MainWindow(QMainWindow):
         QMessageBox.about(self,
                           "About atomicswap-qt - atomicswap-qt",
                           f'<u><i><h1>atomicswap-qt Version {full_version}</h1></i></u>' + '<br />' +
+                          'Copyright(c) 2011-2020 The Electrum Developers' + '<br />' +
+                          'Copyright(c) 2013-2020 The btcsuite developers' + '<br />' +
+                          'Copyright(c) 2015-2020 The Decred developers' + '<br />' +
+                          'Copyright(c) 2019-2020 The atomicswap-qt developers' + '<br /><br />' +
                           'This software is rewrite ' +
                           '<a href="https://github.com/decred/atomicswap">decred/atomicswap</a> ' +
                           'by Python3 and add GUI by PyQt5.' + '<br /><br />' +
