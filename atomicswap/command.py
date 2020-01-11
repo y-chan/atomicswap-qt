@@ -29,7 +29,7 @@ from atomicswap.redeem import redeem
 from atomicswap.refund import refund
 
 
-def command(path: str, cmd: str, params: list) -> None:
+def command(cmd: str, params: list) -> None:
     cmd_list = ["initiate", "participate", "auditcontract", "extractsecret", "redeem", "refund", "help"]
     cmd_bool = cmd in cmd_list
 
@@ -82,7 +82,7 @@ def command(path: str, cmd: str, params: list) -> None:
         params_len = len(params)
         if cmd == "initiate":
             if params_len == 3:
-                _, coind = make_coin_data(path, params[2])
+                _, coind = make_coin_data(params[2])
                 params[1] = int(params[1]) * 10 ** 8
                 params[2] = coind
                 _, b = initiate(*params)
@@ -92,7 +92,7 @@ def command(path: str, cmd: str, params: list) -> None:
                 initiate_help()
         elif cmd == "participate":
             if params_len == 4:
-                _, coind = make_coin_data(path, params[3])
+                _, coind = make_coin_data(params[3])
                 params[2] = int(params[2]) * 10 ** 8
                 params[3] = coind
                 b = participate(*params)
@@ -102,7 +102,7 @@ def command(path: str, cmd: str, params: list) -> None:
                 participate_help()
         elif cmd == "auditcontract":
             if params_len == 3:
-                _, coind = make_coin_data(path, params[2])
+                _, coind = make_coin_data(params[2])
                 params[2] = coind
                 auditcontract(*params)
             else:
@@ -110,7 +110,7 @@ def command(path: str, cmd: str, params: list) -> None:
                 auditcontract_help()
         elif cmd == "extractsecret":
             if params_len == 3:
-                _, coind = make_coin_data(path, params[2])
+                _, coind = make_coin_data(params[2])
                 params[2] = coind
                 extractsecret(*params)
             else:
@@ -118,7 +118,7 @@ def command(path: str, cmd: str, params: list) -> None:
                 extractsecret_help()
         elif cmd == "redeem":
             if params_len == 4:
-                _, coind = make_coin_data(path, params[3])
+                _, coind = make_coin_data(params[3])
                 params[3] = coind
                 redeem_tx = redeem(*params)
                 publish_transaction(redeem_tx.serialize_witness().hex(), "redeem", coind)
@@ -127,7 +127,7 @@ def command(path: str, cmd: str, params: list) -> None:
                 redeem_help()
         elif cmd == "refund":
             if params_len == 3:
-                _, coind = make_coin_data(path, params[2])
+                _, coind = make_coin_data(params[2])
                 params[2] = coind
                 refund_tx = refund(*params)
                 publish_transaction(refund_tx.serialize_witness().hex(), "refund", coind)

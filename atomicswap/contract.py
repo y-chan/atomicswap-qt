@@ -96,9 +96,12 @@ def buildContract(contract: contractTuple, coind: Coind) -> builtTuple:
                       contract_fee, refund_tx, refund_fee)
 
 
-def buildRefund(contract: list, contract_tx: MsgTx, coind: Coind,
+def buildRefund(contract: Union[list, bytes], contract_tx: MsgTx, coind: Coind,
                 fee_per_kb: int, min_fee_per_kb: int) -> Tuple[MsgTx, int]:
-    contract_bytes = unparse_script(contract)
+    if isinstance(contract, bytes):
+        contract_bytes = contract
+    else:
+        contract_bytes = unparse_script(contract)
     contract_hash160 = hash160(contract_bytes)
     p2sh_addr = hash160_to_b58_address(contract_hash160, coind.p2sh)
     p2sh_script = pay_to_addr_script(p2sh_addr, coind)

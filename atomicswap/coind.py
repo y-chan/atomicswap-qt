@@ -24,9 +24,11 @@ import os
 import json
 import requests
 import platform
+
 from typing import Tuple, Union
 
-coins = "./atomicswap/coins/"
+from .util import get_path, resource_path
+
 
 class GetFeeError(Exception):
     pass
@@ -42,7 +44,7 @@ class RestartWallet(Exception):
 
 class Coind:
     def __init__(self, name: str, unit: str, p2pkh: Union[int, list], p2sh: Union[int, list], bech32_hrp: str,
-                    port: int, user: str, pwd: str, sign_wallet: bool, tx_version=2, ver_id=0):
+                 port: int, user: str, pwd: str, sign_wallet: bool, tx_version=2, ver_id=0):
         self.name = name
         self.unit = unit
         self.p2pkh = p2pkh
@@ -63,7 +65,11 @@ class Coind:
         try:
             return requests.post(self.endpoint, headers=headers, data=data).json()
         except Exception:
-            return {'error': '{} backend is down or not responding'.format(self.name)}
+            return {
+                'error': {
+                    'message': '{} backend is down or not responding'.format(self.name)
+                }
+            }
 
     def simple_request(self, method: str) -> dict:
         result = self.make_request(method)
@@ -185,9 +191,10 @@ class Coind:
         print('Warning: falling back to mempool relay fee policy')
         return relayfee, relayfee
 
-def make_coin_data(path: str, coin: str) -> Tuple[int, Coind]:
+def make_coin_data(coin: str) -> Tuple[int, Coind]:
     os_name = platform.system()
     low = coin.lower()
+    path = get_path()
 
     conf_path = '/' + low + '.conf'
     if "Testnet" in coin:

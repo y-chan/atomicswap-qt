@@ -20,41 +20,45 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from PyQt5.QtWidgets import (QMainWindow, QWidget, QPushButton, QDesktopWidget, QHBoxLayout,
-                             QTextEdit, qApp, QLineEdit, QComboBox, QLabel, QVBoxLayout,
-                             QButtonGroup, QRadioButton, QStackedWidget, QMessageBox)
+from PyQt5.QtWidgets import (QMainWindow, QWidget, QPushButton, QDesktopWidget, QHBoxLayout, QTextEdit, QLineEdit,
+                             QComboBox, QLabel, QVBoxLayout, QButtonGroup, QRadioButton, QStackedWidget, QMessageBox)
 from PyQt5.QtGui import QPixmap, QDoubleValidator
 from PyQt5.QtCore import Qt
 
 from pyperclip import copy
+from typing import Tuple
 
 from atomicswap.auditcontract import auditcontract
-from atomicswap.address import is_p2pkh, sha256
-from atomicswap.coind import coins, make_coin_data, GetConfigError, RestartWallet, InvalidRPCError
+from atomicswap.address import is_p2pkh, sha256, hash160, hash160_to_b58_address
+from atomicswap.coind import make_coin_data, GetConfigError, RestartWallet, InvalidRPCError
 from atomicswap.coin_list import coin_list
 from atomicswap.initiate import initiate
 from atomicswap.participate import participate
 from atomicswap.extractsecret import extractsecret
 from atomicswap.redeem import redeem
+from atomicswap.util import resource_path
+from atomicswap.contract import builtTuple, buildRefund
+from atomicswap.transaction import deserialize_witness
+
+from .main_window import MainWindow
 
 import atomicswap
+import binascii
 import requests
 
-icons = "./atomicswap/qt/icons/"
 
+class AtomicSwapWindow(QMainWindow):
 
-class AtomicSwapQt(QMainWindow):
-
-    def __init__(self, path: str):
+    def __init__(self, parent: MainWindow):
         super().__init__()
-        self.title = "atomicswap-qt"
+        self.title = "atomicswap - atomicswap-qt"
         self.left = 0
         self.top = 0
-        self.width = 800
-        self.height = 500
+        self.width = 600
+        self.height = 400
         self.send_coin_name = "Bitcoin"
         self.receive_coin_name = "Litecoin"
-        self.path = path
+        self.parent = parent
         self.send_coind = None
         self.receive_coind = None
         self.initiate_flag = False
@@ -75,7 +79,8 @@ class AtomicSwapQt(QMainWindow):
         self.start_vbox.addWidget(self.atomic_label)
         self.coins_hbox = QHBoxLayout()
         self.send_coin_label = QLabel(self)
-        self.send_coin_label.setPixmap(QPixmap(coins + self.send_coin_name.lower() + '.png').scaled(128, 128))
+        self.send_coin_label.setPixmap(QPixmap(
+            resource_path('coins', self.send_coin_name.lower() + '.png')).scaled(128, 128))
         self.send_coin_label.setAlignment(Qt.AlignCenter)
         self.send_label = QLabel("Send currency", self)
         self.send_label.setAlignment(Qt.AlignCenter)
@@ -89,7 +94,8 @@ class AtomicSwapQt(QMainWindow):
         self.send_coin_vbox.addWidget(self.send_label)
         self.send_coin_vbox.addWidget(self.send_coin_combo)
         self.receive_coin_label = QLabel(self)
-        self.receive_coin_label.setPixmap(QPixmap(coins + self.receive_coin_name.lower() + '.png').scaled(128, 128))
+        self.receive_coin_label.setPixmap(QPixmap(
+            resource_path('coins', self.receive_coin_name.lower() + '.png')).scaled(128, 128))
         self.receive_coin_label.setAlignment(Qt.AlignCenter)
         self.receive_label = QLabel("Receive currency", self)
         self.receive_label.setAlignment(Qt.AlignCenter)
@@ -103,7 +109,7 @@ class AtomicSwapQt(QMainWindow):
         self.receive_coin_vbox.addWidget(self.receive_label)
         self.receive_coin_vbox.addWidget(self.receive_coin_combo)
         self.swap_label = QLabel(self)
-        self.swap_label.setPixmap(QPixmap(icons + 'icons8-swap.png'))
+        self.swap_label.setPixmap(QPixmap(resource_path('qt', 'icons', 'icons8-swap.png')))
         self.swap_label.setAlignment(Qt.AlignCenter)
         self.swap_vbox = QVBoxLayout()
         self.swap_vbox.addStretch(1)
@@ -120,7 +126,7 @@ class AtomicSwapQt(QMainWindow):
         self.quit_button = QPushButton("Quit", self)
         self.start_next_button = QPushButton("Next", self)
         self.start_next_button.setDefault(True)
-        self.quit_button.clicked.connect(qApp.quit)
+        self.quit_button.clicked.connect(self.hide)
         self.start_next_button.clicked.connect(self.next_page)
         self.start_button_hbox = QHBoxLayout(self.start_button_widget)
         self.start_button_hbox.addStretch(1)
@@ -151,7 +157,7 @@ class AtomicSwapQt(QMainWindow):
         self.finish_button_hbox.addWidget(self.finish_button)
         self.back_button_1.hide()
         self.back_button_1.clicked.connect(self.back_page)
-        self.finish_button.clicked.connect(qApp.quit)
+        self.finish_button.clicked.connect(self.hide)
         self.button_widget.addWidget(self.finish_button_widget)
 
         # initiate and participate window
@@ -311,7 +317,6 @@ class AtomicSwapQt(QMainWindow):
         self.setGeometry(self.left, self.top, self.width, self.height)
         self.center()
         self.statusBar().showMessage("Ready")
-        self.show()
 
     def initiate(self):
         assert self.main_widget.currentIndex() == 1
@@ -408,38 +413,44 @@ class AtomicSwapQt(QMainWindow):
         self.next_button_1.setEnabled(True)
         self.next_button_1.setDefault(True)
 
-    def coind_check(self, send: bool, coin_name: str) -> bool:
+    def coind_check(self, send: bool, coin_name: str) -> Tuple[bool, str]:
         self.statusBar().showMessage(f"Make {'send' if send else 'receive'} coin data...")
         try:
-            req_ver, coind = make_coin_data(self.path, coin_name)
+            req_ver, coind = make_coin_data(coin_name)
         except FileNotFoundError:
-            self.statusBar().showMessage(f"Coin folder not found for your select, please start {coin_name} wallet.")
-            return False
+            error = f"Coin folder not found for your select, please start {coin_name} wallet."
+            self.statusBar().showMessage(error)
+            return False, error
         except RestartWallet:
-            self.statusBar().showMessage("Coin config file not found for your select, "
-                                         f"so made it by this program. Please restart {coin_name} wallet.")
-            return False
+            error = ("Coin config file not found for your select, "
+                     f"so made it by this program. Please restart {coin_name} wallet.")
+            self.statusBar().showMessage(error)
+            return False, error
         except GetConfigError as e:
             self.statusBar().showMessage(str(e))
-            return False
+            return False, str(e)
         self.statusBar().showMessage(f"Connection check...({coin_name})")
         try:
             version = coind.getnetworkinfo()["version"]
         except requests.exceptions.ConnectionError:
-            self.statusBar().showMessage(f"Connection failed.({coin_name})")
-            return False
+            error = f"Connection failed.({coin_name})"
+            self.statusBar().showMessage(error)
+            return False, error
         except InvalidRPCError:
             try:
                 version = coind.getinfo()["version"]
             except InvalidRPCError:
-                self.statusBar().showMessage(f"Connection failed.{coin_name}")
-                return False
+                error = f"Connection failed.{coin_name}"
+                self.statusBar().showMessage(error)
+                return False, error
             except KeyError:
-                self.statusBar().showMessage(f"Can't get version from json.{coin_name}")
-                return False
+                error = f"Can't get version from json.{coin_name}"
+                self.statusBar().showMessage(error)
+                return False, error
         except KeyError:
-            self.statusBar().showMessage(f"Can't get version from json.{coin_name}")
-            return False
+            error = f"Can't get version from json.{coin_name}"
+            self.statusBar().showMessage(error)
+            return False, error
         if req_ver <= version:
             coind.sign_wallet = True
         if send:
@@ -447,7 +458,7 @@ class AtomicSwapQt(QMainWindow):
         else:
             self.receive_coind = coind
         self.statusBar().showMessage(f"Connection successful({coin_name})")
-        return True
+        return True, ""
 
     def on_send_coin(self, text: str):
         split_list = text.split()
@@ -456,7 +467,8 @@ class AtomicSwapQt(QMainWindow):
         else:
             split_text = text
         self.send_coin_name = text
-        self.send_coin_label.setPixmap(QPixmap(coins + split_text.lower() + '.png').scaled(128, 128))
+        self.send_coin_label.setPixmap(QPixmap(
+            resource_path('coins', split_text.lower() + '.png')).scaled(128, 128))
 
     def on_receive_coin(self, text):
         split_list = text.split()
@@ -465,7 +477,8 @@ class AtomicSwapQt(QMainWindow):
         else:
             split_text = text
         self.receive_coin_name = text
-        self.receive_coin_label.setPixmap(QPixmap(coins + split_text.lower() + '.png').scaled(128, 128))
+        self.receive_coin_label.setPixmap(QPixmap(
+            resource_path('coins', split_text.lower() + '.png')).scaled(128, 128))
 
     def next_page(self):
         page_number = self.main_widget.currentIndex()
@@ -474,10 +487,10 @@ class AtomicSwapQt(QMainWindow):
             if self.send_coin_name == self.receive_coin_name:
                 self.statusBar().showMessage("Send coin and receive coin are same. Please reselect coin")
                 return
-            check = self.coind_check(True, self.send_coin_name)
+            check, _ = self.coind_check(True, self.send_coin_name)
             if not check:
                 return
-            check = self.coind_check(False, self.receive_coin_name)
+            check, _ = self.coind_check(False, self.receive_coin_name)
             if not check:
                 return
             self.i_label.setText(f"Please input participator's {self.send_coind.name} address and send amount.")
@@ -492,6 +505,7 @@ class AtomicSwapQt(QMainWindow):
                     self.secret, self.send_contract_tuple = initiate(self.i_addr_box.text(),
                                                                      int(float(self.i_amount_box.text()) * 1e8),
                                                                      self.send_coind)
+                    self.secret_hash = sha256(self.secret)
                 except atomicswap.coind.InvalidRPCError as e:
                     self.statusBar().showMessage(str(e))
                     return
@@ -512,12 +526,21 @@ class AtomicSwapQt(QMainWindow):
                                                  QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
             if send_question == QMessageBox.No:
                 return
-            result = self.send_coind.sendrawtransaction(self.send_contract_tuple.contractTx.serialize_witness().hex())
-            assert result == self.send_contract_tuple.contractTxHash.hex()
+            try:
+                result = self.send_coind.sendrawtransaction(self.send_contract_tuple.contractTx.serialize_witness().hex())
+            except atomicswap.coind.InvalidRPCError as e:
+                QMessageBox.critical(self, 'Error', 'Fatal problem has occurred!' + '\n' + str(e),
+                                     QMessageBox.Ok, QMessageBox.Ok)
+                self.hide()
+                return
+            if result != self.send_contract_tuple.contractTxHash.hex():
+                QMessageBox.critical(self, 'Error', 'Fatal problem has occurred!' + '\n' + "Transaction is missing!",
+                                     QMessageBox.Ok, QMessageBox.Ok)
             self.contract_result.setPlainText("Contract: " + self.send_contract_tuple.contract.hex())
             self.contract_result.append("Contract Transaction: " +
                                         self.send_contract_tuple.contractTx.serialize_witness().hex())
             self.back_button.setDisabled(True)
+            self.db_set_data(self.make_db_data(0))
         elif page_number == 2:
             if not self.initiate_flag:
                 self.redeem_ip.setCurrentIndex(1)
@@ -553,11 +576,20 @@ class AtomicSwapQt(QMainWindow):
                                                  QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
             if send_question == QMessageBox.No:
                 return
-            result = self.receive_coind.sendrawtransaction(self.receive_tx.serialize_witness().hex())
-            assert result == self.receive_tx.get_txid().hex()
+            try:
+                result = self.receive_coind.sendrawtransaction(self.receive_tx.serialize_witness().hex())
+            except atomicswap.coind.InvalidRPCError as e:
+                QMessageBox.critical(self, 'Error', 'Fatal problem has occurred!' + '\n' + str(e),
+                                     QMessageBox.Ok, QMessageBox.Ok)
+                self.hide()
+                return
+            if result != self.receive_tx.get_txid().hex():
+                QMessageBox.critical(self, 'Error', 'Fatal problem has occurred!' + '\n' + "Transaction is missing!",
+                                     QMessageBox.Ok, QMessageBox.Ok)
             self.redeem_result.setPlainText("Redeem Transaction: " +
                                             self.receive_tx.serialize_witness().hex())
             self.back_button.setDisabled(True)
+            self.db_set_data(self.make_db_data(1))
             if not self.initiate_flag:
                 self.button_widget.setCurrentIndex(2)
         elif page_number == 4:
@@ -584,3 +616,116 @@ class AtomicSwapQt(QMainWindow):
         cp = QDesktopWidget().availableGeometry().center()
         qr.moveCenter(cp)
         self.move(qr.topLeft())
+
+    def make_db_data(self, status: int):
+        type = "i" if self.initiate_flag else "p"
+        try:
+            _, _, send_value = auditcontract(self.send_contract_tuple.contract.hex(),
+                                             self.send_contract_tuple.contractTx.serialize_witness().hex(),
+                                             self.send_coind)
+            send_contract = self.send_contract_tuple.contract.hex()
+            send_contract_tx = self.send_contract_tuple.contractTx.serialize_witness().hex()
+        except:
+            send_value = None
+            send_contract = ""
+            send_contract_tx = ""
+
+        try:
+            if self.initiate_flag:
+                _, _, receive_value = auditcontract(self.i_p_contract.text().strip(),
+                                                    self.i_p_tx.text().strip(),
+                                                    self.receive_coind)
+                receive_contract = self.i_p_contract.text().strip()
+                receive_contract_tx = self.i_p_tx.text().strip()
+            else:
+                _, _, receive_value = auditcontract(self.contract_box.text().strip(),
+                                                    self.contract_tx_box.text().strip(),
+                                                    self.receive_coind)
+                receive_contract = self.contract_box.text().strip()
+                receive_contract_tx = self.contract_tx_box.text().strip()
+        except:
+            receive_value = None
+            receive_contract = ""
+            receive_contract_tx = ""
+
+        try:
+            send_redeem = self.redeem_tx.text().strip()
+        except:
+            send_redeem = ""
+
+        try:
+            receive_redeem = self.receive_tx.serialize_witness().hex()
+        except:
+            receive_redeem = ""
+
+        return {
+            "Status": status,
+            "Type": type,
+            "Send": {
+                "Coin": self.send_coin_name,
+                "Value": send_value,
+                "Contract": send_contract,
+                "Transaction": send_contract_tx,
+                "Redeem": send_redeem  # participator only
+            },
+            "Receive": {
+                "Coin": self.receive_coin_name,
+                "Value": receive_value,
+                "Contract": receive_contract,
+                "Transaction": receive_contract_tx,
+                "Redeem": receive_redeem
+            },
+            "Secret": self.secret.hex(),
+            "SecretHash": self.secret_hash.hex()
+        }
+
+    def db_set_data(self, data: dict) -> None:
+        try:
+            self.parent.history_db.delete_data(self.secret_hash.hex())
+        except:
+            pass
+        self.parent.history_db.add_data(data)
+        self.parent.history_view.update()
+
+    def resume_atomicswap(self, data: dict) -> str:
+        self.button_widget.setCurrentIndex(1)
+        status = data["Status"]
+        if status == 0 or status == 2:
+            if data["Receive"]["Redeem"]:
+                return "This contract has been successful."
+            self.send_coin_name = data["Send"]["Coin"]
+            self.receive_coin_name = data["Receive"]["Coin"]
+            check, error = self.coind_check(True, self.send_coin_name)
+            if not check:
+                return error
+            check, error = self.coind_check(False, self.receive_coin_name)
+            if not check:
+                return error
+            self.secret_hash = binascii.a2b_hex(data["SecretHash"])
+            if data["Type"] == "i":
+                self.initiate_flag = True
+                self.secret = binascii.a2b_hex(data["Secret"])
+                if sha256(self.secret) != self.secret_hash:
+                    return "Secret or SecretHash is missing!"
+            else:
+                self.contract_box.setText(data["Receive"]["Contract"])
+                self.contract_tx_box.setText(data["Receive"]["Transaction"])
+            contract = data["Send"]["Contract"]
+            contract_bytes = binascii.a2b_hex(contract)
+            fee_per_kb, min_fee_per_kb = self.send_coind.get_fee_per_byte()
+            contract_tx = deserialize_witness(data["Send"]["Transaction"], self.send_coind)
+            refund_tx, refund_fee = buildRefund(contract_bytes, contract_tx,
+                                                self.send_coind, fee_per_kb, min_fee_per_kb)
+            p2sh_addr_hash = hash160(contract_bytes)
+            p2sh_addr = hash160_to_b58_address(p2sh_addr_hash, self.send_coind.p2sh)
+            self.send_contract_tuple = builtTuple(contract_bytes, p2sh_addr, contract_tx.get_txid(),
+                                                  contract_tx, 0, refund_tx, refund_fee)
+            self.contract_result.setPlainText("Contract: " + self.send_contract_tuple.contract.hex())
+            self.contract_result.append("Contract Transaction: " +
+                                        self.send_contract_tuple.contractTx.serialize_witness().hex())
+            self.main_widget.setCurrentIndex(2)
+            self.back_button.setDisabled(True)
+            self.next_button_1.setEnabled(True)
+            return ""
+        else:
+            return "This contract has been successful!"
