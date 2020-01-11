@@ -124,8 +124,8 @@ class Coind:
             result = self.make_request('fundrawtransaction', [tx_hex])
             tx_dict = result['result']
 
-        if tx_dict is None:
-            raise InvalidRPCError(result["error"]["message"])
+            if tx_dict is None:
+                raise InvalidRPCError(result["error"]["message"])
 
         return tx_dict
 
