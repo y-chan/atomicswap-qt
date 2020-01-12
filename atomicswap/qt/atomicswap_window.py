@@ -452,15 +452,15 @@ class AtomicSwapWindow(QMainWindow):
             try:
                 version = coind.getinfo()["version"]
             except InvalidRPCError:
-                error = f"Connection failed.{coin_name}"
+                error = f"Connection failed.({coin_name})"
                 self.statusBar().showMessage(error)
                 return False, error
             except KeyError:
-                error = f"Can't get version from json.{coin_name}"
+                error = f"Can't get version from json.({coin_name})"
                 self.statusBar().showMessage(error)
                 return False, error
         except KeyError:
-            error = f"Can't get version from json.{coin_name}"
+            error = f"Can't get version from json.({coin_name})"
             self.statusBar().showMessage(error)
             return False, error
         if req_ver <= version and coind.sign_wallet is False:
