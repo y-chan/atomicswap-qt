@@ -169,7 +169,8 @@ class MainWindow(QMainWindow):
                           '* ' + 'Full compatible with decred/atomicswap' + '<br /><br />' +
                           'This software is ' +
                           '<a href="https://github.com/y-chan/atomicswap-qt/blob/master/LICENSE">' +
-                          'MIT License</a>.')
+                          'MIT License</a>.' + ' ' + 'And ' + '<a href="https://github.com/y-chan/atomicswap-qt">' +
+                          'OSS</a>.')
 
 class HistoryView(QTreeView):
 
