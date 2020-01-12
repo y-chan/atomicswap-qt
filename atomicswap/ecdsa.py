@@ -66,9 +66,9 @@ class Signature:
 
 def canonicalize_int(val: int) -> bytes:
     try:
-        b = val.to_bytes(len(hex(val)[2:])//2, 'big')
+        b = val.to_bytes(len(hex(val)[2:]) // 2, 'big')
     except:
-        b = val.to_bytes(len(hex(val))//2, 'big')
+        b = val.to_bytes(len(hex(val)) // 2, 'big')
     if len(b) == 0:
         b = bytes(1)
     if b[0] & 0x80 != 0:
@@ -301,6 +301,6 @@ def pubkey_from_privkey(privkey: bytes) -> bytes:
     except:
         x_len = len(hex(x)) // 2
         x_bytes = x.to_bytes(x_len, 'big')
-    for i in range(32-x_len):
+    for i in range(32 - x_len):
         b += (0).to_bytes(1, 'big')
     return b + x_bytes
