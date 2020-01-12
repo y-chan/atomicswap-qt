@@ -463,7 +463,7 @@ class AtomicSwapWindow(QMainWindow):
             error = f"Can't get version from json.{coin_name}"
             self.statusBar().showMessage(error)
             return False, error
-        if req_ver <= version:
+        if req_ver <= version and coind.sign_wallet is False:
             coind.sign_wallet = True
         if send:
             self.send_coind = coind
