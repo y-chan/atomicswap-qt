@@ -31,7 +31,8 @@ from .script import extract_pkccript_addrs, ScriptType, pay_to_addr_script, unpa
 import binascii
 
 
-class RedeemError(Exception): pass
+class RedeemError(Exception):
+    pass
 
 
 def redeem(contract_str: str, contract_tx_str: str, secret_str: str, coind: Coind) -> MsgTx:

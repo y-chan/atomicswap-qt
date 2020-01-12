@@ -45,7 +45,8 @@ SigHashAnyOneCanPay = 0x80
 sigHashMask = 0x1f
 
 
-class BuildContractError(Exception): pass
+class BuildContractError(Exception):
+    pass
 
 
 class contractTuple(NamedTuple):
@@ -242,7 +243,7 @@ def calcSignatureHash(script: bytes, hash_type: int, tx: MsgTx, idx: int) -> byt
         tx_copy.change_params(tx_in=tx_ins, tx_out=[])
     elif hash_type & sigHashMask == SigHashSingle:
         tx_ins = []
-        tx_outs = tx_copy.tx_outs[:idx+1]
+        tx_outs = tx_copy.tx_outs[:idx + 1]
         tx_out = TxOut(-1, b'')
         for i in range(idx):
             tx_outs[i] = tx_out
@@ -252,7 +253,7 @@ def calcSignatureHash(script: bytes, hash_type: int, tx: MsgTx, idx: int) -> byt
             tx_ins.append(tx_in)
         tx_copy.change_params(tx_in=tx_ins, tx_out=tx_outs)
     if hash_type & SigHashAnyOneCanPay != 0:
-        tx_ins = tx_copy.tx_ins[idx:idx+1]
+        tx_ins = tx_copy.tx_ins[idx:idx + 1]
         tx_copy.change_params(tx_in=tx_ins)
     wbuf = tx_copy.serialize()
     wbuf += hash_type.to_bytes(4, 'little')
@@ -294,8 +295,10 @@ def estimateRefundSerializeSize(contract: Union[bytes, list], tx_out: list) -> i
     contract_push = int_to_bytes(len(contract), contract_push)
     contract_push += contract
     contract_size = len(contract_push)
-    return (12 + ver_int_serialize_size(1) + ver_int_serialize_size(len(tx_out)) +
-            input_size(refundAtomicSwapSigScriptSize + contract_size) + sum_output_serialize_sizes(tx_out))
+    return (12 + ver_int_serialize_size(1) +
+            ver_int_serialize_size(len(tx_out)) +
+            input_size(refundAtomicSwapSigScriptSize + contract_size) +
+            sum_output_serialize_sizes(tx_out))
 
 
 def estimateRedeemSerializeSize(contract: Union[bytes, list], tx_out: list) -> int:

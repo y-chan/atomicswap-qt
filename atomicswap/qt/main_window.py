@@ -218,7 +218,6 @@ class HistoryView(QTreeView):
             index = self.model().index(i, 0, QModelIndex())
             self.setIndexWidget(index, status_label)
 
-
     def set_model(self):
         self.setModel(QStandardItemModel(0, 6, self))
         self.model().setHeaderData(self.Columns.STATUS, Qt.Horizontal, "Status")

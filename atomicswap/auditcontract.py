@@ -67,7 +67,7 @@ def auditcontract(contract_str: str, contract_tx_str: str, coind: Coind, logging
         print("Secret hash:", pushes["secret_hash"].hex())
         print("Locktime:", dt)
         if reach_bool:
-            reach = timedelta(seconds=locktime-now)
+            reach = timedelta(seconds=locktime - now)
             print("Locktime reached in", reach)
         else:
             print("Contract refund time lock has expired")

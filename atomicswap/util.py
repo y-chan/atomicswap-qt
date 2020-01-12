@@ -27,9 +27,9 @@ import json
 
 
 status_icons = [
-    "icons8-setting.png", # initiate or participate
-    "icons8-check.png", # complete atomicswap
-    "icons8-risk.png" # locktime expiry
+    "icons8-setting.png",  # initiate or participate
+    "icons8-check.png",  # complete atomicswap
+    "icons8-risk.png"  # locktime expiry
 ]
 
 
@@ -79,7 +79,7 @@ class History_DB:
 
     def delete_data(self, key: str) -> None:
         index = self.get_data_index(key)
-        self.data = self.data[:index] + self.data[index+1:]
+        self.data = self.data[:index] + self.data[index + 1:]
         self.write_db()
 
     def get_data(self, key: str) -> dict:

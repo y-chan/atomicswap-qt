@@ -36,7 +36,8 @@ __b43chars = b'0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ$*+-./:'
 assert len(__b43chars) == 43
 
 
-class PrivkeyDecodeError(Exception): pass
+class PrivkeyDecodeError(Exception):
+    pass
 
 
 def assert_bytes(*args):

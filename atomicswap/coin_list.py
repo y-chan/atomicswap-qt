@@ -21,13 +21,13 @@
 # SOFTWARE.
 
 coin_list = [
-  "Bitcoin",
-  "Litecoin",
-  "Monacoin",
-  "BitZeny",
-#  "Koto",
-  "VIPSTARCOIN",
-  "Bellcoin",
-  "Sugarchain",
-  "MicroBitcoin"
+    "Bitcoin",
+    "Litecoin",
+    "Monacoin",
+    "BitZeny",
+    # "Koto",
+    "VIPSTARCOIN",
+    "Bellcoin",
+    "Sugarchain",
+    "MicroBitcoin"
 ]

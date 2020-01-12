@@ -30,7 +30,8 @@ from .opcodes import opcodes, opcode_search
 from .segwit_addr import encode
 
 
-class ParseOrUnParseError(Exception): pass
+class ParseOrUnParseError(Exception):
+    pass
 
 
 class ScriptType(IntEnum):
@@ -159,28 +160,28 @@ def parse_script(script: Union[bytes, list]) -> dict:
             timer -= 1
             if isinstance(script, bytes):
                 if timer > 0:
-                    parsed_data += script[i:i+1]
+                    parsed_data += script[i:i + 1]
                 else:
-                    parsed_data += script[i:i+1]
+                    parsed_data += script[i:i + 1]
                     parsed_data_list.append(parsed_data)
                     parsed_data = b''
             else:
-                parsed_data_list.append(script[i:i+1])
+                parsed_data_list.append(script[i:i + 1])
             continue
         elif data > 0:
             data -= 1
             if isinstance(script, bytes):
                 if data > 0:
-                    timer_bytes += script[i:i+1]
+                    timer_bytes += script[i:i + 1]
                 else:
-                    timer_bytes += script[i:i+1]
+                    timer_bytes += script[i:i + 1]
                     timer = int.from_bytes(timer_bytes, 'little')
                     parsed_data_list.append(timer_bytes)
                     timer_bytes = b''
             else:
-                timer = int.from_bytes(script[i:i+1], 'little')
-                parsed_data_list.append(script[i:i+1])
-        opcode = int.from_bytes(script[i:i+1], 'little')
+                timer = int.from_bytes(script[i:i + 1], 'little')
+                parsed_data_list.append(script[i:i + 1])
+        opcode = int.from_bytes(script[i:i + 1], 'little')
         opcode, script_bool = opcode_search(opcode)
         if not script_bool and isinstance(script, bytes):
             timer = opcode

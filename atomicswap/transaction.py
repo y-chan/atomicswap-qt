@@ -31,7 +31,8 @@ from .script import unparse_script, parse_script
 from .opcodes import opcodes
 
 
-class DeserializeError(Exception): pass
+class DeserializeError(Exception):
+    pass
 
 
 class OutPoint:
@@ -198,7 +199,7 @@ class MsgTx:
             serialized_bytes += self.locktime.to_bytes(4, 'little')
             if self.coind.ver_id:
                 serialized_bytes += self.expiry_height.to_bytes(4, 'little')
-                sapling_raw = b'\x00' * (8 + 1 + 1 + 1) # ValueBalance + spend + output + joinsplits
+                sapling_raw = b'\x00' * (8 + 1 + 1 + 1)  # ValueBalance + spend + output + joinsplits
                 serialized_bytes += sapling_raw
             if witness:
                 self.change_witness_flag = False
@@ -306,7 +307,7 @@ def deserialize(tx_hex: str, coind: Coind, witness=False) -> MsgTx:
         if flag != 1:
             raise DeserializeError("This rawtransaction hasn't SegWit!")
         count, tx_bytes = read_ver_int(tx_bytes)
-    tx_ins= []
+    tx_ins = []
     for i in range(count):
         op_hash, tx_bytes = read_bytes(tx_bytes, 32)
         index, tx_bytes = read_int(tx_bytes, 4)
@@ -338,7 +339,7 @@ def deserialize(tx_hex: str, coind: Coind, witness=False) -> MsgTx:
     locktime, tx_bytes = read_int(tx_bytes, 4)
     if coind.ver_id:
         expiry_height, tx_bytes = read_int(tx_bytes, 4)
-        assert tx_bytes == b'\x00' * (8 + 1 + 1 + 1) # Sapling Raw: ValueBalance + spend + output + joinsplits
+        assert tx_bytes == b'\x00' * (8 + 1 + 1 + 1)  # Sapling Raw: ValueBalance + spend + output + joinsplits
         tx_bytes = b''
     else:
         expiry_height = 0
