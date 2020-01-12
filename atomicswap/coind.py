@@ -286,6 +286,7 @@ def make_coin_data(coin: str) -> Tuple[int, Coind]:
     except GetConfigError:
         make_conf()
 
+    sign_wallet = False
     tx_ver = 2
     ver_id = 0
 
@@ -295,7 +296,10 @@ def make_coin_data(coin: str) -> Tuple[int, Coind]:
     if 'ver_id' in coin_json:
         ver_id = coin_json['ver_id']
 
+    if 'sign_wallet' in coin_json:
+        sign_wallet = coin_json['sign_wallet']
+
     coind = Coind(coin_json['name'], coin_json['unit'], coin_json['p2pkh'], coin_json['p2sh'],
-                    coin_json['bech32_hrp'], port, user, pwd, False, tx_ver, ver_id)
+                    coin_json['bech32_hrp'], port, user, pwd, sign_wallet, tx_ver, ver_id)
 
     return coin_json['req_ver'], coind

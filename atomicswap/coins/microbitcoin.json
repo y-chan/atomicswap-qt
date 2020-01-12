@@ -1,4 +1,5 @@
 {
+	"sign_wallet": true,
 	"name": "MicroBitcoin",
 	"unit": "MBC",
 	"p2pkh": 26,
