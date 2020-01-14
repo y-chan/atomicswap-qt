@@ -160,8 +160,8 @@ class TxOut:
             self.change_flag = True
 
     # debug function
-    def show(self) -> dict:
-        return {"value": to_amount(self.value), "pkscript": self.pkscript.hex()}
+    def show(self, decimals=8) -> dict:
+        return {"value": to_amount(self.value, decimals), "pkscript": self.pkscript.hex()}
 
 
 class MsgTx:
@@ -282,7 +282,7 @@ class MsgTx:
         for tx_in in self.tx_ins:
             tx_ins.append(tx_in.show())
         for tx_out in self.tx_outs:
-            tx_outs.append(tx_out.show())
+            tx_outs.append(tx_out.show(self.coind.decimals))
         result = {"txid": self.get_txid().hex(),
                   "txhash": self.get_txhash().hex(),
                   "version": self.version,

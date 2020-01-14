@@ -516,10 +516,11 @@ class AtomicSwapWindow(QMainWindow):
             self.my_address_box.setText(self.my_address)
             self.button_widget.setCurrentIndex(1)
         elif page_number == 1:
+            send_decimals = self.send_coind.decimals
             if self.initiate_flag:
                 try:
                     self.secret, self.send_contract_tuple = initiate(self.i_addr_box.text(),
-                                                                     to_satoshis(float(self.i_amount_box.text())),
+                                                                     to_satoshis(float(self.i_amount_box.text()), send_decimals),
                                                                      self.send_coind)
                     self.secret_hash = sha256(self.secret)
                 except atomicswap.coind.InvalidRPCError as e:
@@ -531,7 +532,7 @@ class AtomicSwapWindow(QMainWindow):
                                                        self.receive_coind)
                 try:
                     self.send_contract_tuple = participate(self.p_addr_box.text(),
-                                                           to_satoshis(float(self.p_amount_box.text())),
+                                                           to_satoshis(float(self.p_amount_box.text()), send_decimals),
                                                            self.secret_hash.hex(),
                                                            self.send_coind)
                 except atomicswap.coind.InvalidRPCError as e:

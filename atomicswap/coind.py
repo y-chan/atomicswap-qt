@@ -44,7 +44,7 @@ class RestartWallet(Exception):
 
 class Coind:
     def __init__(self, name: str, unit: str, p2pkh: Union[int, list], p2sh: Union[int, list], bech32_hrp: str,
-                 port: int, user: str, pwd: str, sign_wallet: bool, tx_version=2, ver_id=0):
+                 port: int, user: str, pwd: str, sign_wallet: bool, tx_version=2, ver_id=0, decimals=8):
         self.name = name
         self.unit = unit
         self.p2pkh = p2pkh
@@ -57,6 +57,7 @@ class Coind:
         self.sign_wallet = sign_wallet
         self.tx_version = tx_version
         self.ver_id = ver_id
+        self.decimals = decimals
 
     def make_request(self, method: str, params=[]) -> dict:
         headers = {'content-type': 'text/plain;'}
@@ -176,8 +177,8 @@ class Coind:
 
     def get_fee_per_byte(self) -> Tuple[int, int]:
         try:
-            relayfee = to_satoshis(self.getnetworkinfo()['relayfee'])
-            paytxfee = to_satoshis(self.getwalletinfo()['paytxfee'])
+            relayfee = to_satoshis(self.getnetworkinfo()['relayfee'], self.decimals)
+            paytxfee = to_satoshis(self.getwalletinfo()['paytxfee'], self.decimals)
 
         except InvalidRPCError:
             raise GetFeeError('Can\'t get fee amount!')
@@ -191,7 +192,7 @@ class Coind:
             return maxfee, relayfee
 
         try:
-            usefee = to_satoshis(self.estimatesmartfee()['feerate'])
+            usefee = to_satoshis(self.estimatesmartfee()['feerate'], self.decimals)
 
             if relayfee > usefee:
                 usefee = relayfee
@@ -287,8 +288,15 @@ def make_coin_data(coin: str) -> Tuple[int, Coind]:
         make_conf()
 
     sign_wallet = False
+    decimals = 8
     tx_ver = 2
     ver_id = 0
+
+    if 'sign_wallet' in coin_json:
+        sign_wallet = coin_json['sign_wallet']
+
+    if 'decimals' in coin_json:
+        decimals = coin_json['decimals']
 
     if 'tx_ver' in coin_json:
         tx_ver = coin_json['tx_ver']
@@ -296,10 +304,7 @@ def make_coin_data(coin: str) -> Tuple[int, Coind]:
     if 'ver_id' in coin_json:
         ver_id = coin_json['ver_id']
 
-    if 'sign_wallet' in coin_json:
-        sign_wallet = coin_json['sign_wallet']
-
     coind = Coind(coin_json['name'], coin_json['unit'], coin_json['p2pkh'], coin_json['p2sh'],
-                    coin_json['bech32_hrp'], port, user, pwd, sign_wallet, tx_ver, ver_id)
+                    coin_json['bech32_hrp'], port, user, pwd, sign_wallet, tx_ver, ver_id, decimals)
 
     return coin_json['req_ver'], coind

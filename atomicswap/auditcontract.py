@@ -62,7 +62,7 @@ def auditcontract(contract_str: str, contract_tx_str: str, coind: Coind, logging
     reach_bool = locktime >= now
     if logging:
         print("Contract address:", contract_addr)
-        print("Contract value:", to_amount(contract_tx.tx_outs[contract_out].value), coind.unit)
+        print("Contract value:", to_amount(contract_tx.tx_outs[contract_out].value, coind.decimals), coind.unit)
         print("Recipient address:", recipient_addr)
         print("Author's refund address:", refund_addr)
         print("Secret hash:", pushes["secret_hash"].hex())
@@ -72,4 +72,4 @@ def auditcontract(contract_str: str, contract_tx_str: str, coind: Coind, logging
             print("Locktime reached in", reach)
         else:
             print("Contract refund time lock has expired")
-    return reach_bool, pushes["secret_hash"], to_amount(contract_tx.tx_outs[contract_out].value)
+    return reach_bool, pushes["secret_hash"], to_amount(contract_tx.tx_outs[contract_out].value, coind.decimals)
