@@ -145,9 +145,8 @@ class MainWindow(QMainWindow):
         QMessageBox.information(self, 'Succeed', 'Transaction was broadcast', QMessageBox.Ok, QMessageBox.Ok)
         return
 
-    def details_dialog(self, key: str):
+    def details_dialog(self, data: dict):
         from .details_dialog import DetailsDialog
-        data = self.history_db.get_data(key)
         dd = DetailsDialog(self, data)
         dd.exec_()
 
@@ -232,7 +231,8 @@ class HistoryView(QTreeView):
         if not idx.isValid():
             return
         key = self.model().itemFromIndex(self.selected_in_column(self.Columns.SECRET_HASH)[0]).text()
-        self.parent.details_dialog(key)
+        data = self.parent.history_db.get_data(key)
+        self.parent.details_dialog(data)
 
     def create_menu(self, position):
         menu = QMenu()
@@ -247,5 +247,17 @@ class HistoryView(QTreeView):
                 menu.addAction("Resume atomicswap", lambda: self.parent.resume_atomicswap(data))
             if data["Status"] == 2:
                 menu.addAction("Refund atomicswap", lambda: self.parent.refund_atomicswap(data))
-            menu.addAction("Details atomicswap", lambda: self.parent.details_dialog(key))
+            menu.addAction("Details atomicswap", lambda: self.parent.details_dialog(data))
+            menu.addAction("Delete atomicswap history", lambda: self.delete_atomicswap_history(data))
         menu.exec_(self.viewport().mapToGlobal(position))
+
+    def delete_atomicswap_history(self, data: dict):
+        send_coin = data["Send"]["Coin"]
+        receive_coin = data["Receive"]["Coin"]
+        delete_question = QMessageBox.warning(self, 'Warning',
+                                              f"Delete {send_coin} to {receive_coin} atomicswap history?",
+                                              QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
+        if delete_question == QMessageBox.No:
+            return
+        self.parent.history_db.delete_data(data["SecretHash"])
+        self.update()
