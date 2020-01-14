@@ -21,10 +21,10 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import os
 import platform
+import math
 import json
-
+import os
 
 status_icons = [
     "icons8-setting.png",  # initiate or participate
@@ -121,3 +121,12 @@ class History_DB:
             except:
                 pass
         return
+
+def to_satoshis(value: float, decimals=8) -> int:
+    return int(value * math.pow(10, decimals))
+
+def to_amount(value: int, decimals=8) -> float:
+    return round(value / math.pow(10, decimals), decimals)
+
+def amount_format(value: float, decimals=8) -> str:
+    return '%.*f' % (decimals, value)

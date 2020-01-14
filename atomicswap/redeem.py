@@ -27,6 +27,7 @@ from .contract import (estimateRedeemSerializeSize, fee_for_serialize_size, crea
                        is_dust_output, verify, redeemP2SHContract, calcFeePerKb)
 from .transaction import atomic_swap_extract, deserialize, deserialize_witness, MsgTx, OutPoint, TxIn, TxOut
 from .script import extract_pkccript_addrs, ScriptType, pay_to_addr_script, unparse_script
+from .util import to_amount, amount_format
 
 import binascii
 
@@ -80,8 +81,8 @@ def redeem(contract_str: str, contract_tx_str: str, secret_str: str, coind: Coin
     tx_in.change_params(sig_script=redeem_sig_script)
     redeem_tx.change_params(tx_in=tx_in)
     redeem_txhash = redeem_tx.get_txid()
-    redeem_fee_per_kb = "{:.8f}".format(calcFeePerKb(fee, redeem_tx.serialize_witness_size()))
-    print("Redeem fee:", fee / 1e8, coind.unit, "(" + redeem_fee_per_kb, coind.unit + "/KB)")
+    redeem_fee_per_kb = amount_format(calcFeePerKb(fee, redeem_tx.serialize_witness_size()), coind.decimals)
+    print("Redeem fee:", to_amount(fee, coind.decimals), coind.unit, "(" + redeem_fee_per_kb, coind.unit + "/KB)")
     print("Redeem transaction (" + redeem_txhash.hex() + ")")
     print(redeem_tx.serialize_witness().hex())
     if verify:

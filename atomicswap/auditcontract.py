@@ -25,6 +25,7 @@ from .address import b58_address_to_hash160, hash160_to_b58_address, hash160
 from .coind import Coind
 from .script import extract_pkccript_addrs, ScriptType
 from .transaction import deserialize, deserialize_witness, atomic_swap_extract
+from .util import to_amount
 
 import binascii
 import time
@@ -61,7 +62,7 @@ def auditcontract(contract_str: str, contract_tx_str: str, coind: Coind, logging
     reach_bool = locktime >= now
     if logging:
         print("Contract address:", contract_addr)
-        print("Contract value:", contract_tx.tx_outs[contract_out].value / 1e8, coind.unit)
+        print("Contract value:", to_amount(contract_tx.tx_outs[contract_out].value, coind.decimals), coind.unit)
         print("Recipient address:", recipient_addr)
         print("Author's refund address:", refund_addr)
         print("Secret hash:", pushes["secret_hash"].hex())
@@ -71,4 +72,4 @@ def auditcontract(contract_str: str, contract_tx_str: str, coind: Coind, logging
             print("Locktime reached in", reach)
         else:
             print("Contract refund time lock has expired")
-    return reach_bool, pushes["secret_hash"], contract_tx.tx_outs[contract_out].value / 1e8
+    return reach_bool, pushes["secret_hash"], to_amount(contract_tx.tx_outs[contract_out].value, coind.decimals)

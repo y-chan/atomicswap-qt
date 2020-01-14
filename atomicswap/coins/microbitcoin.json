@@ -2,6 +2,7 @@
 	"sign_wallet": true,
 	"name": "MicroBitcoin",
 	"unit": "MBC",
+	"decimals": 4,
 	"p2pkh": 26,
 	"p2sh": 51,
 	"bech32_hrp": "mbc",
