@@ -29,6 +29,7 @@ from .address import sha256d
 from .coind import Coind
 from .script import unparse_script, parse_script
 from .opcodes import opcodes
+from .util import to_amount
 
 
 class DeserializeError(Exception):
@@ -160,7 +161,7 @@ class TxOut:
 
     # debug function
     def show(self) -> dict:
-        return {"value": self.value / 1e8, "pkscript": self.pkscript.hex()}
+        return {"value": to_amount(self.value), "pkscript": self.pkscript.hex()}
 
 
 class MsgTx:

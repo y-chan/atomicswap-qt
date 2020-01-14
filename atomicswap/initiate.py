@@ -24,6 +24,7 @@
 from .coind import Coind
 from .address import sha256, is_p2pkh
 from .contract import secretSize, contractTuple, calcFeePerKb, buildContract, builtTuple
+from .util import to_amount
 
 import secrets
 import time
@@ -43,8 +44,8 @@ def initiate(addr: str, amount: int, coind: Coind) -> Tuple[bytes, builtTuple]:
     refund_fee_per_kb = "{:.8f}".format(calcFeePerKb(b.refundFee, b.refundTx.serialize_witness_size()))
     print("Secret:", secret.hex())
     print("Secret Hash:", secret_hash.hex())
-    print("Contract Fee", b.contractFee / 1e8, coind.unit, "(" + contract_fee_per_kb, coind.unit + "/KB)")
-    print("Refund Fee", b.refundFee / 1e8, coind.unit, "(" + refund_fee_per_kb, coind.unit + "/KB)")
+    print("Contract Fee", to_amount(b.contractFee), coind.unit, "(" + contract_fee_per_kb, coind.unit + "/KB)")
+    print("Refund Fee", to_amount(b.refundFee), coind.unit, "(" + refund_fee_per_kb, coind.unit + "/KB)")
     print("Contract (" + b.contractP2SH + "):")
     print(b.contract.hex())
     print("Contract Transaction (" + b.contractTxHash.hex() + "):")

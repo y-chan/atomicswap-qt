@@ -36,7 +36,7 @@ from atomicswap.initiate import initiate
 from atomicswap.participate import participate
 from atomicswap.extractsecret import extractsecret
 from atomicswap.redeem import redeem
-from atomicswap.util import resource_path
+from atomicswap.util import resource_path, to_satoshis
 from atomicswap.contract import builtTuple, buildRefund
 from atomicswap.transaction import deserialize_witness
 
@@ -519,7 +519,7 @@ class AtomicSwapWindow(QMainWindow):
             if self.initiate_flag:
                 try:
                     self.secret, self.send_contract_tuple = initiate(self.i_addr_box.text(),
-                                                                     int(float(self.i_amount_box.text()) * 1e8),
+                                                                     to_satoshis(float(self.i_amount_box.text())),
                                                                      self.send_coind)
                     self.secret_hash = sha256(self.secret)
                 except atomicswap.coind.InvalidRPCError as e:
@@ -531,7 +531,7 @@ class AtomicSwapWindow(QMainWindow):
                                                        self.receive_coind)
                 try:
                     self.send_contract_tuple = participate(self.p_addr_box.text(),
-                                                           int(float(self.p_amount_box.text()) * 1e8),
+                                                           to_satoshis(float(self.p_amount_box.text())),
                                                            self.secret_hash.hex(),
                                                            self.send_coind)
                 except atomicswap.coind.InvalidRPCError as e:

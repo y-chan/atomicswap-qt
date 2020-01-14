@@ -27,7 +27,7 @@ import platform
 
 from typing import Tuple, Union
 
-from .util import get_path, resource_path
+from .util import get_path, resource_path, to_satoshis
 
 
 class GetFeeError(Exception):
@@ -176,8 +176,8 @@ class Coind:
 
     def get_fee_per_byte(self) -> Tuple[int, int]:
         try:
-            relayfee = int(self.getnetworkinfo()['relayfee'] * 1e8)
-            paytxfee = int(self.getwalletinfo()['paytxfee'] * 1e8)
+            relayfee = to_satoshis(self.getnetworkinfo()['relayfee'])
+            paytxfee = to_satoshis(self.getwalletinfo()['paytxfee'])
 
         except InvalidRPCError:
             raise GetFeeError('Can\'t get fee amount!')
@@ -191,7 +191,7 @@ class Coind:
             return maxfee, relayfee
 
         try:
-            usefee = int(self.estimatesmartfee()['feerate'] * 1e8)
+            usefee = to_satoshis(self.estimatesmartfee()['feerate'])
 
             if relayfee > usefee:
                 usefee = relayfee

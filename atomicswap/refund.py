@@ -25,6 +25,7 @@ from .coind import Coind
 from .contract import buildRefund, calcFeePerKb
 from .script import parse_script, mix_script
 from .transaction import atomic_swap_extract, deserialize, deserialize_witness, MsgTx
+from .util import to_amount
 
 import binascii
 
@@ -42,7 +43,7 @@ def refund(contracr_str: str, contract_tx_str: str, coind: Coind) -> MsgTx:
                                         coind, fee_per_kb, min_fee_per_kb)
     refund_txhash = refund_tx.get_txid()
     refund_fee_per_kb = "{:.8f}".format(calcFeePerKb(refund_fee, refund_tx.serialize_witness_size()))
-    print("Refund fee:", refund_fee / 1e8, coind.unit, "(" + refund_fee_per_kb, coind.unit + "/KB)")
+    print("Refund fee:", to_amount(refund_fee), coind.unit, "(" + refund_fee_per_kb, coind.unit + "/KB)")
     print("Refund transaction(" + refund_txhash.hex() + ")")
     print(refund_tx.serialize_witness().hex())
     return refund_tx
