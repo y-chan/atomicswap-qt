@@ -122,8 +122,11 @@ class History_DB:
                 pass
         return
 
-def to_satoshis(value, decimals=8) -> int:
+def to_satoshis(value: float, decimals=8) -> int:
     return int(value * math.pow(10, decimals))
 
-def to_amount(value, decimals=8) -> float:
+def to_amount(value: int, decimals=8) -> float:
     return round(value / math.pow(10, decimals), decimals)
+
+def amount_format(value: float, decimals=8) -> str:
+    return '%.*f' % (decimals, value)

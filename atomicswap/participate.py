@@ -24,7 +24,7 @@
 from .address import is_p2pkh
 from .coind import Coind
 from .contract import buildContract, contractTuple, calcFeePerKb, builtTuple
-from .util import to_amount
+from .util import to_amount, amount_format
 
 import binascii
 import time
@@ -38,8 +38,8 @@ def participate(addr: str, amount: int, secret_hash: str, coind: Coind) -> built
     contract = contractTuple(addr, amount, locktime, secret_hash)
     b = buildContract(contract, coind)
     refund_txhash = b.refundTx.get_txid()
-    contract_fee_per_kb = "{:.8f}".format(calcFeePerKb(b.contractFee, b.contractTx.serialize_witness_size()))
-    refund_fee_per_kb = "{:.8f}".format(calcFeePerKb(b.refundFee, b.refundTx.serialize_witness_size()))
+    contract_fee_per_kb = amount_format(calcFeePerKb(b.contractFee, b.contractTx.serialize_witness_size()))
+    refund_fee_per_kb = amount_format(calcFeePerKb(b.refundFee, b.refundTx.serialize_witness_size()))
     print("Secret Hash:", secret_hash.hex())
     print("Contract Fee:", to_amount(b.contractFee), coind.unit + "(" + contract_fee_per_kb, coind.unit + "/KB)")
     print("Refund Fee:", to_amount(b.refundFee), coind.unit + "(" + refund_fee_per_kb, coind.unit + "/KB)")
