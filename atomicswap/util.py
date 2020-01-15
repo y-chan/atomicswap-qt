@@ -32,6 +32,17 @@ status_icons = [
     "icons8-risk.png"  # locktime expiry
 ]
 
+coin_list = [
+    "Bitcoin",
+    "Litecoin",
+    "Monacoin",
+    "BitZeny",
+    # "Koto",
+    "VIPSTARCOIN",
+    "Bellcoin",
+    "Sugarchain",
+    "MicroBitcoin"
+]
 
 pkg_dir = os.path.split(os.path.realpath(__file__))[0]
 

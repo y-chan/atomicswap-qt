@@ -45,4 +45,4 @@ I present the procedure.
 * 2, Add coin icon to this folder.
   Please add coin icon.(png or jpg)
 * 3, Add coin name to coin_list
-  Please add coin name to [coin_list.py](../coin_list.py).
+  Please add coin name to [util.py](../util.py).

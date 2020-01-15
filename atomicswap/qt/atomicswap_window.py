@@ -31,12 +31,11 @@ from typing import Tuple
 from atomicswap.auditcontract import auditcontract
 from atomicswap.address import is_p2pkh, sha256, hash160, hash160_to_b58_address
 from atomicswap.coind import make_coin_data, GetConfigError, RestartWallet, InvalidRPCError
-from atomicswap.coin_list import coin_list
 from atomicswap.initiate import initiate
 from atomicswap.participate import participate
 from atomicswap.extractsecret import extractsecret
 from atomicswap.redeem import redeem
-from atomicswap.util import resource_path, to_satoshis
+from atomicswap.util import coin_list, resource_path, to_satoshis
 from atomicswap.contract import builtTuple, buildRefund
 from atomicswap.transaction import deserialize_witness
 
