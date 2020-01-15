@@ -183,7 +183,6 @@ class AtomicSwapWindow(QMainWindow):
         self.i_addr_box.textEdited.connect(self.ip_edited)
         self.i_amount_label = QLabel("Amount")
         self.i_amount_box = QLineEdit(self)
-        self.i_amount_box.setValidator(QDoubleValidator(0, 999999999999, 8))
         self.i_amount_box.textEdited.connect(self.ip_edited)
         self.initiate_vbox.addWidget(self.i_label)
         self.initiate_vbox.addWidget(self.i_addr_label)
@@ -216,7 +215,6 @@ class AtomicSwapWindow(QMainWindow):
         self.p_addr_box.textEdited.connect(self.ip_edited)
         self.p_amount_label = QLabel("Amount")
         self.p_amount_box = QLineEdit(self)
-        self.p_amount_box.setValidator(QDoubleValidator(0, 999999999999, 8))
         self.p_amount_box.textEdited.connect(self.ip_edited)
         self.participate_vbox.addWidget(self.p_label)
         self.participate_vbox.addLayout(self.address_hbox)
@@ -515,6 +513,8 @@ class AtomicSwapWindow(QMainWindow):
             self.my_address = self.receive_coind.getnewaddress()
             self.my_address_box.setText(self.my_address)
             self.button_widget.setCurrentIndex(1)
+            self.i_amount_box.setValidator(QDoubleValidator(0, 999999999999, self.send_coind.decimals))
+            self.p_amount_box.setValidator(QDoubleValidator(0, 999999999999, self.send_coind.decimals))
         elif page_number == 1:
             send_decimals = self.send_coind.decimals
             if self.initiate_flag:
@@ -724,6 +724,8 @@ class AtomicSwapWindow(QMainWindow):
             check, error = self.coind_check(False, self.receive_coin_name)
             if not check:
                 return error
+            self.i_amount_box.setValidator(QDoubleValidator(0, 999999999999, self.send_coind.decimals))
+            self.p_amount_box.setValidator(QDoubleValidator(0, 999999999999, self.send_coind.decimals))
             self.secret_hash = binascii.a2b_hex(data["SecretHash"])
             if data["Type"] == "i":
                 self.initiate_flag = True
