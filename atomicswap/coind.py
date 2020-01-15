@@ -67,6 +67,7 @@ class Coind:
             return requests.post(self.endpoint, headers=headers, data=data).json()
         except Exception:
             return {
+                'result': None,
                 'error': {
                     'message': '{} backend is down or not responding'.format(self.name)
                 }

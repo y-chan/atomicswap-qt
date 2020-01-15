@@ -441,11 +441,11 @@ class AtomicSwapWindow(QMainWindow):
         self.statusBar().showMessage(f"Connection check...({coin_name})")
         try:
             version = coind.getnetworkinfo()["version"]
-        except requests.exceptions.ConnectionError:
-            error = f"Connection failed.({coin_name})"
-            self.statusBar().showMessage(error)
-            return False, error
-        except InvalidRPCError:
+        except InvalidRPCError as e:
+            if 'backend is down or not responding' in str(e):
+                error = f"Connection failed.({coin_name})"
+                self.statusBar().showMessage(error)
+                return False, error
             try:
                 version = coind.getinfo()["version"]
             except InvalidRPCError:
