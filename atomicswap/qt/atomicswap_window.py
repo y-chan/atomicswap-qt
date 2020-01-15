@@ -43,7 +43,6 @@ from .main_window import MainWindow
 
 import atomicswap
 import binascii
-import requests
 
 
 class AtomicSwapWindow(QMainWindow):
@@ -466,7 +465,7 @@ class AtomicSwapWindow(QMainWindow):
             self.send_coind = coind
         else:
             self.receive_coind = coind
-        self.statusBar().showMessage(f"Connection successful({coin_name})")
+        self.statusBar().showMessage(f"Connection successful.({coin_name})")
         return True, ""
 
     def on_send_coin(self, text: str):
