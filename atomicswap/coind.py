@@ -73,7 +73,7 @@ class Coind:
                 }
             }
 
-    def simple_request(self, method: str) -> dict:
+    def simple_request(self, method: str) -> Union[dict, str]:
         result = self.make_request(method)
 
         if result['result'] is None:
