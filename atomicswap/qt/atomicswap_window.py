@@ -36,7 +36,7 @@ from atomicswap.participate import participate
 from atomicswap.extractsecret import extractsecret
 from atomicswap.redeem import redeem
 from atomicswap.util import coin_list, resource_path, to_satoshis
-from atomicswap.contract import builtTuple, buildRefund
+from atomicswap.contract import builtTuple, buildRefund, BuildContractError
 from atomicswap.transaction import deserialize_witness
 
 from .main_window import MainWindow
@@ -524,6 +524,9 @@ class AtomicSwapWindow(QMainWindow):
                 except atomicswap.coind.InvalidRPCError as e:
                     self.statusBar().showMessage(str(e))
                     return
+                except BuildContractError as e:
+                    self.statusBar().showMessage(str(e))
+                    return
             else:
                 _, self.secret_hash, _ = auditcontract(self.contract_box.text().strip(),
                                                        self.contract_tx_box.text().strip(),
@@ -534,6 +537,9 @@ class AtomicSwapWindow(QMainWindow):
                                                            self.secret_hash.hex(),
                                                            self.send_coind)
                 except atomicswap.coind.InvalidRPCError as e:
+                    self.statusBar().showMessage(str(e))
+                    return
+                except BuildContractError as e:
                     self.statusBar().showMessage(str(e))
                     return
             send_question = QMessageBox.question(self, 'Question',
