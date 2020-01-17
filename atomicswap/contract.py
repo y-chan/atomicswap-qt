@@ -134,7 +134,7 @@ def buildRefund(contract: Union[list, bytes], contract_tx: MsgTx, coind: Coind,
     tx_out.change_params(value=value)
     if is_dust_output(tx_out, min_fee_per_kb):
         raise BuildContractError(f"refund output value of {value} is dust")
-    tx_in = TxIn(contract_outpoint, b'', [], 0)
+    tx_in = TxIn(contract_outpoint, b"", [], 0)
     refund_tx.change_params(tx_in=tx_in, tx_out=tx_out)
     refund_sig, refund_pubkey = createSig(refund_tx, 0, contract_bytes, refund_addr, coind)
     refund_sig_script = unparse_script(refundP2SHContract(contract_bytes, refund_sig, refund_pubkey))
@@ -180,8 +180,8 @@ def atomicSwapContract(my_addr_bytes: bytes, to_addr_bytes: bytes, locktime: int
     script.append(opcodes.OP_ELSE)  # Refund path
 
     # Verify locktime and drop it off the stack (which is not done by CLTV).
-    script.append(len(locktime.to_bytes(4, 'little')))  # OP_DATA_1 - 1 + 4 (0x01 - 0x01 + 0x04)
-    script.append(locktime.to_bytes(4, 'little'))
+    script.append(len(locktime.to_bytes(4, "little")))  # OP_DATA_1 - 1 + 4 (0x01 - 0x01 + 0x04)
+    script.append(locktime.to_bytes(4, "little"))
     script.append(opcodes.OP_CHECKLOCKTIMEVERIFY)
     script.append(opcodes.OP_DROP)
 
@@ -216,7 +216,7 @@ def createSig(tx: MsgTx, idx: int, pkscript: bytes, addr: str, coind: Coind) -> 
 def rawTxInSignature(tx: MsgTx, idx: int, sub_script: bytes, hash_type: int, key: int) -> bytes:
     sig_hash = calcSignatureHash(sub_script, hash_type, tx, idx)
     signature = sign_rfc6979(key, sig_hash)
-    return signature.signature_serialize() + hash_type.to_bytes(1, 'big')
+    return signature.signature_serialize() + hash_type.to_bytes(1, "big")
 
 
 def calcSignatureHash(script: bytes, hash_type: int, tx: MsgTx, idx: int) -> bytes:
@@ -232,7 +232,7 @@ def calcSignatureHash(script: bytes, hash_type: int, tx: MsgTx, idx: int) -> byt
             sig_script = unparse_script(script)
             tx_in.change_params(sig_script=sig_script)
         else:
-            tx_in.change_params(sig_script=b'')
+            tx_in.change_params(sig_script=b"")
         tx_ins.append(tx_in)
     tx_copy.change_params(tx_in=tx_ins)
     if hash_type & sigHashMask == SigHashNone:
@@ -245,7 +245,7 @@ def calcSignatureHash(script: bytes, hash_type: int, tx: MsgTx, idx: int) -> byt
     elif hash_type & sigHashMask == SigHashSingle:
         tx_ins = []
         tx_outs = tx_copy.tx_outs[:idx + 1]
-        tx_out = TxOut(-1, b'')
+        tx_out = TxOut(-1, b"")
         for i in range(idx):
             tx_outs[i] = tx_out
         for i, tx_in in enumerate(tx_copy.tx_ins):
@@ -257,7 +257,7 @@ def calcSignatureHash(script: bytes, hash_type: int, tx: MsgTx, idx: int) -> byt
         tx_ins = tx_copy.tx_ins[idx:idx + 1]
         tx_copy.change_params(tx_in=tx_ins)
     wbuf = tx_copy.serialize()
-    wbuf += hash_type.to_bytes(4, 'little')
+    wbuf += hash_type.to_bytes(4, "little")
     return sha256d(wbuf)
 
 
@@ -269,7 +269,7 @@ def refundP2SHContract(contract: bytes, sig: bytes, pubkey: bytes) -> list:
     b.append(pubkey)
     b.append(opcodes.OP_0)
     b.append(opcodes.OP_PUSHDATA1)
-    b.append(len(contract).to_bytes(1, 'little'))
+    b.append(len(contract).to_bytes(1, "little"))
     b.append(contract)
     return b
 
@@ -284,7 +284,7 @@ def redeemP2SHContract(contract: bytes, sig: bytes, pubkey: bytes, secret: bytes
     b.append(secret)
     b.append(opcodes.OP_1)
     b.append(opcodes.OP_PUSHDATA1)
-    b.append(len(contract).to_bytes(1, 'little'))
+    b.append(len(contract).to_bytes(1, "little"))
     b.append(contract)
     return b
 
@@ -292,7 +292,7 @@ def redeemP2SHContract(contract: bytes, sig: bytes, pubkey: bytes, secret: bytes
 def estimateRefundSerializeSize(contract: Union[bytes, list], tx_out: list) -> int:
     if isinstance(contract, list):
         contract = unparse_script(contract)
-    contract_push = b''
+    contract_push = b""
     contract_push = int_to_bytes(len(contract), contract_push)
     contract_push += contract
     contract_size = len(contract_push)
@@ -305,7 +305,7 @@ def estimateRefundSerializeSize(contract: Union[bytes, list], tx_out: list) -> i
 def estimateRedeemSerializeSize(contract: Union[bytes, list], tx_out: list) -> int:
     if isinstance(contract, list):
         contract = unparse_script(contract)
-    contract_push = b''
+    contract_push = b""
     contract_push = int_to_bytes(len(contract), contract_push)
     contract_push += contract
     contract_size = len(contract_push)

@@ -88,11 +88,11 @@ def pay_to_script_hash_script(addr_hash: bytes) -> list:
 
 
 def unparse_script(script: Union[dict, list]) -> bytes:
-    out = b''
+    out = b""
     if isinstance(script, list):
         for i in script:
             if isinstance(i, int):
-                out += i.to_bytes(1, 'little')
+                out += i.to_bytes(1, "little")
             elif isinstance(i, bytes):
                 out += i
             else:
@@ -103,7 +103,7 @@ def unparse_script(script: Union[dict, list]) -> bytes:
         count = 0
         for i in parsed_script:
             opcode, opcode_bool = opcode_search(i)
-            out += i.to_bytes(1, 'little')
+            out += i.to_bytes(1, "little")
             if not opcode_bool:
                 out += data[count]
                 count += 1
@@ -152,8 +152,8 @@ def parse_script(script: Union[bytes, list]) -> dict:
     parsed_script = []
     timer = 0
     data = 0
-    timer_bytes = b''
-    parsed_data = b''
+    timer_bytes = b""
+    parsed_data = b""
     parsed_data_list = []
     for i in range(len(script)):
         if timer > 0:
@@ -164,7 +164,7 @@ def parse_script(script: Union[bytes, list]) -> dict:
                 else:
                     parsed_data += script[i:i + 1]
                     parsed_data_list.append(parsed_data)
-                    parsed_data = b''
+                    parsed_data = b""
             else:
                 parsed_data_list.append(script[i:i + 1])
             continue
@@ -175,13 +175,13 @@ def parse_script(script: Union[bytes, list]) -> dict:
                     timer_bytes += script[i:i + 1]
                 else:
                     timer_bytes += script[i:i + 1]
-                    timer = int.from_bytes(timer_bytes, 'little')
+                    timer = int.from_bytes(timer_bytes, "little")
                     parsed_data_list.append(timer_bytes)
-                    timer_bytes = b''
+                    timer_bytes = b""
             else:
-                timer = int.from_bytes(script[i:i + 1], 'little')
+                timer = int.from_bytes(script[i:i + 1], "little")
                 parsed_data_list.append(script[i:i + 1])
-        opcode = int.from_bytes(script[i:i + 1], 'little')
+        opcode = int.from_bytes(script[i:i + 1], "little")
         opcode, script_bool = opcode_search(opcode)
         if not script_bool and isinstance(script, bytes):
             timer = opcode

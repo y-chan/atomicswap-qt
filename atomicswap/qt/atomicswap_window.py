@@ -79,7 +79,7 @@ class AtomicSwapWindow(QMainWindow):
         self.coins_hbox = QHBoxLayout()
         self.send_coin_label = QLabel(self)
         self.send_coin_label.setPixmap(QPixmap(
-            resource_path('coins', self.send_coin_name.lower() + '.png')).scaled(128, 128))
+            resource_path("coins", self.send_coin_name.lower() + ".png")).scaled(128, 128))
         self.send_coin_label.setAlignment(Qt.AlignCenter)
         self.send_label = QLabel("Send currency", self)
         self.send_label.setAlignment(Qt.AlignCenter)
@@ -94,7 +94,7 @@ class AtomicSwapWindow(QMainWindow):
         self.send_coin_vbox.addWidget(self.send_coin_combo)
         self.receive_coin_label = QLabel(self)
         self.receive_coin_label.setPixmap(QPixmap(
-            resource_path('coins', self.receive_coin_name.lower() + '.png')).scaled(128, 128))
+            resource_path("coins", self.receive_coin_name.lower() + ".png")).scaled(128, 128))
         self.receive_coin_label.setAlignment(Qt.AlignCenter)
         self.receive_label = QLabel("Receive currency", self)
         self.receive_label.setAlignment(Qt.AlignCenter)
@@ -108,7 +108,7 @@ class AtomicSwapWindow(QMainWindow):
         self.receive_coin_vbox.addWidget(self.receive_label)
         self.receive_coin_vbox.addWidget(self.receive_coin_combo)
         self.swap_label = QLabel(self)
-        self.swap_label.setPixmap(QPixmap(resource_path('qt', 'icons', 'icons8-swap.png')))
+        self.swap_label.setPixmap(QPixmap(resource_path("qt", "icons", "icons8-swap.png")))
         self.swap_label.setAlignment(Qt.AlignCenter)
         self.swap_vbox = QVBoxLayout()
         self.swap_vbox.addStretch(1)
@@ -346,7 +346,7 @@ class AtomicSwapWindow(QMainWindow):
             try:
                 p2pkh = is_p2pkh(self.i_addr_box.text().strip(), self.send_coind)
                 if not p2pkh:
-                    self.i_addr_label.setText(f"{self.send_coind.name} address" + " " + "(Address isn't P2PKH)")
+                    self.i_addr_label.setText(f"{self.send_coind.name} address (Address isn't P2PKH)")
                 else:
                     self.i_addr_label.setText(f"{self.send_coind.name} address")
                 amount = float(self.i_amount_box.text().strip())
@@ -364,7 +364,7 @@ class AtomicSwapWindow(QMainWindow):
                                                      self.contract_tx_box.text().strip(),
                                                      self.receive_coind,
                                                      False)
-                label_text = "Contract is Ok, (Your receive amount " + str(value) + " " + self.receive_coind.unit + ")"
+                label_text = f"Contract is Ok, (Your receive amount {str(value)} {self.receive_coind.unit})"
                 self.contract_status_label.setText(label_text)
             except:
                 self.contract_status_label.setText("Contract isn't Ok")
@@ -378,7 +378,7 @@ class AtomicSwapWindow(QMainWindow):
             try:
                 p2pkh = is_p2pkh(self.p_addr_box.text().strip(), self.send_coind)
                 if not p2pkh:
-                    self.p_addr_label.setText(f"{self.send_coind.name} address" + " " + "(Address isn't P2PKH)")
+                    self.p_addr_label.setText(f"{self.send_coind.name} address (Address isn't P2PKH)")
                 else:
                     self.p_addr_label.setText(f"{self.send_coind.name} address")
                 amount = float(self.p_amount_box.text().strip())
@@ -399,7 +399,7 @@ class AtomicSwapWindow(QMainWindow):
                                                                False)
                 if secret_hash != sha256(self.secret):
                     raise
-                label_text = "Contract is Ok, (Your receive amount " + str(value) + " " + self.receive_coind.unit + ")"
+                label_text = f"Contract is Ok, (Your receive amount {str(value)} {self.receive_coind.unit})"
                 self.i_p_contract_status_label.setText(label_text)
             except:
                 self.i_p_contract_status_label.setText("Contract isn't Ok")
@@ -422,7 +422,7 @@ class AtomicSwapWindow(QMainWindow):
         self.next_button_1.setDefault(True)
 
     def coind_check(self, send: bool, coin_name: str) -> Tuple[bool, str]:
-        self.statusBar().showMessage(f"Make {'send' if send else 'receive'} coin data...")
+        self.statusBar().showMessage(f"Make {"send" if send else "receive"} coin data...")
         try:
             req_ver, coind = make_coin_data(coin_name)
         except FileNotFoundError:
@@ -441,7 +441,7 @@ class AtomicSwapWindow(QMainWindow):
         try:
             version = coind.getnetworkinfo()["version"]
         except InvalidRPCError as e:
-            if 'backend is down or not responding' in str(e):
+            if "backend is down or not responding" in str(e):
                 error = f"Connection failed.({coin_name})"
                 self.statusBar().showMessage(error)
                 return False, error
@@ -471,22 +471,22 @@ class AtomicSwapWindow(QMainWindow):
     def on_send_coin(self, text: str):
         split_list = text.split()
         if len(split_list) >= 2:
-            split_text = '_'.join(split_list)
+            split_text = "_".join(split_list)
         else:
             split_text = text
         self.send_coin_name = text
         self.send_coin_label.setPixmap(QPixmap(
-            resource_path('coins', split_text.lower() + '.png')).scaled(128, 128))
+            resource_path("coins", split_text.lower() + ".png")).scaled(128, 128))
 
     def on_receive_coin(self, text):
         split_list = text.split()
         if len(split_list) >= 2:
-            split_text = '_'.join(split_list)
+            split_text = "_".join(split_list)
         else:
             split_text = text
         self.receive_coin_name = text
         self.receive_coin_label.setPixmap(QPixmap(
-            resource_path('coins', split_text.lower() + '.png')).scaled(128, 128))
+            resource_path("coins", split_text.lower() + ".png")).scaled(128, 128))
 
     def next_page(self):
         page_number = self.main_widget.currentIndex()
@@ -507,7 +507,7 @@ class AtomicSwapWindow(QMainWindow):
             self.i_addr_label.setText(f"{self.send_coind.name} address")
             self.p_addr_label.setText(f"{self.send_coind.name} address")
             self.my_address_label.setText(f"My {self.receive_coin_name} address" +
-                                          "(" + "Please copy and send to your trading partner." + ")")
+                                          "(Please copy and send to your trading partner.)")
             self.my_address = self.receive_coind.getnewaddress()
             self.my_address_box.setText(self.my_address)
             self.button_widget.setCurrentIndex(1)
@@ -542,7 +542,7 @@ class AtomicSwapWindow(QMainWindow):
                 except BuildContractError as e:
                     self.statusBar().showMessage(str(e))
                     return
-            send_question = QMessageBox.question(self, 'Question',
+            send_question = QMessageBox.question(self, "Question",
                                                  f"Send transaction? ({self.send_contract_tuple.contractTxHash.hex()})",
                                                  QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
             if send_question == QMessageBox.No:
@@ -550,20 +550,20 @@ class AtomicSwapWindow(QMainWindow):
             try:
                 result = self.send_coind.sendrawtransaction(self.send_contract_tuple.contractTx.serialize_witness().hex())
             except atomicswap.coind.InvalidRPCError as e:
-                QMessageBox.critical(self, 'Error', 'Fatal problem has occurred!' + '\n' + str(e),
+                QMessageBox.critical(self, "Error", "Fatal problem has occurred!" + "\n" + str(e),
                                      QMessageBox.Ok, QMessageBox.Ok)
                 self.hide()
                 return
             if result != self.send_contract_tuple.contractTxHash.hex():
-                QMessageBox.critical(self, 'Error', 'Fatal problem has occurred!' + '\n' + "Transaction is missing!",
+                QMessageBox.critical(self, "Error", "Fatal problem has occurred!" + "\n" + "Transaction is missing!",
                                      QMessageBox.Ok, QMessageBox.Ok)
             if self.initiate_flag:
-                self.contract_result.setPlainText(f"{self.receive_coin_name} Address: " + self.my_address)
-                self.contract_result.append("Contract: " + self.send_contract_tuple.contract.hex())
+                self.contract_result.setPlainText(f"{self.receive_coin_name} Address: {self.my_address}")
+                self.contract_result.append(f"Contract: {self.send_contract_tuple.contract.hex()}")
                 self.contract_result.append("Contract Transaction: " +
                                             self.send_contract_tuple.contractTx.serialize_witness().hex())
             else:
-                self.contract_result.setPlainText("Contract: " + self.send_contract_tuple.contract.hex())
+                self.contract_result.setPlainText(f"Contract: {self.send_contract_tuple.contract.hex()}")
                 self.contract_result.append("Contract Transaction: " +
                                             self.send_contract_tuple.contractTx.serialize_witness().hex())
             self.back_button.setDisabled(True)
@@ -598,7 +598,7 @@ class AtomicSwapWindow(QMainWindow):
                 except atomicswap.coind.InvalidRPCError as e:
                     self.statusBar().showMessage(str(e))
                     return
-            send_question = QMessageBox.question(self, 'Question',
+            send_question = QMessageBox.question(self, "Question",
                                                  f"Send transaction? ({self.receive_tx.get_txid().hex()})",
                                                  QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
             if send_question == QMessageBox.No:
@@ -606,12 +606,12 @@ class AtomicSwapWindow(QMainWindow):
             try:
                 result = self.receive_coind.sendrawtransaction(self.receive_tx.serialize_witness().hex())
             except atomicswap.coind.InvalidRPCError as e:
-                QMessageBox.critical(self, 'Error', 'Fatal problem has occurred!' + '\n' + str(e),
+                QMessageBox.critical(self, "Error", "Fatal problem has occurred!" + "\n" + str(e),
                                      QMessageBox.Ok, QMessageBox.Ok)
                 self.hide()
                 return
             if result != self.receive_tx.get_txid().hex():
-                QMessageBox.critical(self, 'Error', 'Fatal problem has occurred!' + '\n' + "Transaction is missing!",
+                QMessageBox.critical(self, "Error", "Fatal problem has occurred!" + "\n" + "Transaction is missing!",
                                      QMessageBox.Ok, QMessageBox.Ok)
             self.redeem_result.setPlainText("Redeem Transaction: " +
                                             self.receive_tx.serialize_witness().hex())

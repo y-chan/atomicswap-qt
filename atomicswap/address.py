@@ -29,10 +29,10 @@ import hashlib
 
 from .coind import Coind
 
-__b58chars = b'123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'
+__b58chars = b"123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
 assert len(__b58chars) == 58
 
-__b43chars = b'0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ$*+-./:'
+__b43chars = b"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ$*+-./:"
 assert len(__b43chars) == 43
 
 
@@ -48,15 +48,15 @@ def assert_bytes(*args):
         for x in args:
             assert isinstance(x, (bytes, bytearray))
     except:
-        print('assert bytes failed', list(map(type, args)))
+        print("assert bytes failed", list(map(type, args)))
         raise
 
 
 def base_encode(v: bytes, base: int) -> str:
-    """ encode v, which is a string of bytes, to base58."""
+    """encode v, which is a string of bytes, to base58."""
     assert_bytes(v)
     if base not in (58, 43):
-        raise ValueError('not supported base: {}'.format(base))
+        raise ValueError(f"not supported base: {base}")
     chars = __b58chars
     if base == 43:
         chars = __b43chars
@@ -79,15 +79,15 @@ def base_encode(v: bytes, base: int) -> str:
             break
     result.extend([chars[0]] * nPad)
     result.reverse()
-    return result.decode('ascii')
+    return result.decode("ascii")
 
 
 def base_decode(v: Union[bytes, str], length: Optional[int], base: int) -> Optional[bytes]:
-    """ decode v into a string of len bytes."""
+    """decode v into a string of len bytes."""
     # assert_bytes(v)
-    v = to_bytes(v, 'ascii')
+    v = to_bytes(v, "ascii")
     if base not in (58, 43):
-        raise ValueError('not supported base: {}'.format(base))
+        raise ValueError(f"not supported base: {base}")
     chars = __b58chars
     if base == 43:
         chars = __b43chars
@@ -95,7 +95,7 @@ def base_decode(v: Union[bytes, str], length: Optional[int], base: int) -> Optio
     for (i, c) in enumerate(v[::-1]):
         digit = chars.find(bytes([c]))
         if digit == -1:
-            raise ValueError('Forbidden character {} for base {}'.format(c, base))
+            raise ValueError(f"Forbidden character {c} for base {base}")
         long_value += digit * (base ** i)
     result = bytearray()
     while long_value >= 256:
@@ -109,14 +109,14 @@ def base_decode(v: Union[bytes, str], length: Optional[int], base: int) -> Optio
             nPad += 1
         else:
             break
-    result.extend(b'\x00' * nPad)
+    result.extend(b"\x00" * nPad)
     if length is not None and len(result) != length:
         return None
     result.reverse()
     return bytes(result)
 
 
-def to_bytes(something, encoding='utf8') -> bytes:
+def to_bytes(something, encoding="utf8") -> bytes:
     """
     cast string to bytes() like object, but for python2 support it's bytearray copy
     """
@@ -131,7 +131,7 @@ def to_bytes(something, encoding='utf8') -> bytes:
 
 
 def b58_address_to_hash160(addr: str, coind: Coind) -> Tuple[bytes, bytes]:
-    addr = to_bytes(addr, 'ascii')
+    addr = to_bytes(addr, "ascii")
     if isinstance(coind.p2pkh, list):
         _bytes = base_decode(addr, 26, base=58)
         return _bytes[0:2], _bytes[2:22]
@@ -152,12 +152,12 @@ def is_p2pkh(addr: str, coind: Coind) -> bool:
 
 
 def sha256(x: Union[bytes, str]) -> bytes:
-    x = to_bytes(x, 'utf8')
+    x = to_bytes(x, "utf8")
     return bytes(hashlib.sha256(x).digest())
 
 
 def sha256d(x: Union[bytes, str]) -> bytes:
-    x = to_bytes(x, 'utf8')
+    x = to_bytes(x, "utf8")
     out = bytes(sha256(sha256(x)))
     return out
 
@@ -172,15 +172,15 @@ def hash160_to_b58_address(h160: bytes, addrtype: Union[int, list]) -> str:
 
 
 def hash160(x: Union[bytes, str]) -> bytes:
-    x = to_bytes(x, 'utf8')
-    h160 = hashlib.new('ripemd160')
+    x = to_bytes(x, "utf8")
+    h160 = hashlib.new("ripemd160")
     h160.update(sha256(x))
     out = h160.digest()
     return bytes(out)
 
 
 def b58_privkey_to_hash160(privkey: str) -> Tuple[bytes, bytes]:
-    key = to_bytes(privkey, 'ascii')
+    key = to_bytes(privkey, "ascii")
     try:
         _bytes = base_decode(key, 38, base=58)
         if _bytes is None or _bytes[33] != 0x01:

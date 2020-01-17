@@ -43,7 +43,7 @@ def refund(contracr_str: str, contract_tx_str: str, coind: Coind) -> MsgTx:
                                         coind, fee_per_kb, min_fee_per_kb)
     refund_txhash = refund_tx.get_txid()
     refund_fee_per_kb = amount_format(calcFeePerKb(refund_fee, refund_tx.serialize_witness_size()), coind.decimals)
-    print("Refund fee:", to_amount(refund_fee, coind.decimals), coind.unit, "(" + refund_fee_per_kb, coind.unit + "/KB)")
-    print("Refund transaction(" + refund_txhash.hex() + ")")
+    print("Refund fee:", to_amount(refund_fee, coind.decimals), coind.unit, f"({refund_fee_per_kb} {coind.unit}/KB)")
+    print(f"Refund transaction({refund_txhash.hex()})")
     print(refund_tx.serialize_witness().hex())
     return refund_tx

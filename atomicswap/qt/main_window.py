@@ -21,7 +21,7 @@
 # SOFTWARE.
 
 from PyQt5.QtWidgets import (QMainWindow, QDesktopWidget, QWidget, QAction, QMenuBar, qApp, QApplication, QLabel, QMenu,
-                             QDialog, QTabWidget, QVBoxLayout, QTreeView, QAbstractItemView, QHeaderView, QMessageBox)
+                             QTabWidget, QVBoxLayout, QTreeView, QAbstractItemView, QHeaderView, QMessageBox)
 from PyQt5.QtCore import Qt, QModelIndex
 from PyQt5.QtGui import QStandardItemModel, QPixmap
 
@@ -72,13 +72,13 @@ class MainWindow(QMainWindow):
 
         # File menu
         file_menu = menubar.addMenu("&File")
-        exit_action = QAction('&Exit', self)
-        exit_action.setShortcut('Ctrl+Q')
-        exit_action.setStatusTip('Exit application')
+        exit_action = QAction("&Exit", self)
+        exit_action.setShortcut("Ctrl+Q")
+        exit_action.setStatusTip("Exit application")
         exit_action.triggered.connect(qApp.quit)
-        atomicswap_action = QAction('&New AtomicSwap', self)
-        atomicswap_action.setShortcut('Ctrl+A')
-        atomicswap_action.setStatusTip('Start new atomic swap contract')
+        atomicswap_action = QAction("&New AtomicSwap", self)
+        atomicswap_action.setShortcut("Ctrl+A")
+        atomicswap_action.setStatusTip("Start new atomic swap contract")
         atomicswap_action.triggered.connect(self.atomicswap_window)
         file_menu.addAction(atomicswap_action)
         file_menu.addSeparator()
@@ -86,11 +86,11 @@ class MainWindow(QMainWindow):
 
         # Help menu
         help_menu = menubar.addMenu("&Help")
-        about_atomicswap_qt_action = QAction('About atomicswap-qt', self)
-        about_atomicswap_qt_action.setStatusTip('About atomicswap-qt')
+        about_atomicswap_qt_action = QAction("About atomicswap-qt", self)
+        about_atomicswap_qt_action.setStatusTip("About atomicswap-qt")
         about_atomicswap_qt_action.triggered.connect(self.about_dialog)
-        about_qt_action = QAction('About Qt', self)
-        about_qt_action.setStatusTip('About Qt')
+        about_qt_action = QAction("About Qt", self)
+        about_qt_action.setStatusTip("About Qt")
         about_qt_action.triggered.connect(QApplication.aboutQt)
         help_menu.addAction(about_atomicswap_qt_action)
         help_menu.addAction(about_qt_action)
@@ -116,7 +116,7 @@ class MainWindow(QMainWindow):
         except:
             error = "Fatal problem has occurred!"
         if error:
-            QMessageBox.critical(self, 'Error', error, QMessageBox.Ok, QMessageBox.Ok)
+            QMessageBox.critical(self, "Error", error, QMessageBox.Ok, QMessageBox.Ok)
             return None
         if refund:
             return asw
@@ -131,7 +131,7 @@ class MainWindow(QMainWindow):
             return
         refund_tx = asw.send_contract_tuple.refund_tx
         assert isinstance(refund_tx, MsgTx)
-        send_question = QMessageBox.question(self, 'Question',
+        send_question = QMessageBox.question(self, "Question",
                                              f"Send transaction? ({refund_tx.get_txid().hex()})",
                                              QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
         if send_question == QMessageBox.No:
@@ -140,9 +140,9 @@ class MainWindow(QMainWindow):
             result = asw.receive_coind.sendrawtransaction(refund_tx.serialize_witness().hex())
             assert result == refund_tx.get_txid().hex()
         except:
-            QMessageBox.warning(self, 'Failed', 'Transaction broadcast was fail.', QMessageBox.Ok, QMessageBox.Ok)
+            QMessageBox.warning(self, "Failed", "Transaction broadcast was fail.", QMessageBox.Ok, QMessageBox.Ok)
             return
-        QMessageBox.information(self, 'Succeed', 'Transaction was broadcast', QMessageBox.Ok, QMessageBox.Ok)
+        QMessageBox.information(self, "Succeed", "Transaction was broadcast", QMessageBox.Ok, QMessageBox.Ok)
         return
 
     def details_dialog(self, data: dict):
@@ -153,23 +153,23 @@ class MainWindow(QMainWindow):
     def about_dialog(self):
         QMessageBox.about(self,
                           "About atomicswap-qt - atomicswap-qt",
-                          f'<u><i><h1>atomicswap-qt Version {full_version}</h1></i></u>' + '<br />' +
-                          'Copyright(c) 2011-2020 The Electrum Developers' + '<br />' +
-                          'Copyright(c) 2013-2020 The btcsuite developers' + '<br />' +
-                          'Copyright(c) 2015-2020 The Decred developers' + '<br />' +
-                          'Copyright(c) 2019-2020 The atomicswap-qt developers' + '<br /><br />' +
-                          'This software is rewrite ' +
-                          '<a href="https://github.com/decred/atomicswap">decred/atomicswap</a> ' +
-                          'by Python3 and add GUI by PyQt5.' + '<br /><br />' +
-                          '<b>This software point</b>' + '<br />' +
-                          '* ' + 'Full scratch base function' + '<br />' +
-                          '* ' + 'Only used standard library, pyqt5, requests and pyperclip.' + '<br />' +
-                          '* ' + 'Can use on the gui' + '<br />' +
-                          '* ' + 'Full compatible with decred/atomicswap' + '<br /><br />' +
-                          'This software is ' +
-                          '<a href="https://github.com/y-chan/atomicswap-qt/blob/master/LICENSE">' +
-                          'MIT License</a>.' + ' ' + 'And ' + '<a href="https://github.com/y-chan/atomicswap-qt">' +
-                          'OSS</a>.')
+                          f"<u><i><h1>atomicswap-qt Version {full_version}</h1></i></u>" + "<br/>" +
+                          "Copyright(c) 2011-2020 The Electrum Developers" + "<br/>" +
+                          "Copyright(c) 2013-2020 The btcsuite developers" + "<br/>" +
+                          "Copyright(c) 2015-2020 The Decred developers" + "<br/>" +
+                          "Copyright(c) 2019-2020 The atomicswap-qt developers" + "<br/><br/>" +
+                          "This software is rewrite " +
+                          "<a href=\"https://github.com/decred/atomicswap\">decred/atomicswap</a> " +
+                          "by Python3 and add GUI by PyQt5." + "<br/><br/>" +
+                          "<b>This software point</b>" + "<br/>" +
+                          "* " + "Full scratch base function" + "<br/>" +
+                          "* " + "Only used standard library, pyqt5, requests and pyperclip." + "<br/>" +
+                          "* " + "Can use on the gui" + "<br/>" +
+                          "* " + "Full compatible with decred/atomicswap" + "<br/><br/>" +
+                          "This software is " +
+                          "<a href=\"https://github.com/y-chan/atomicswap-qt/blob/master/LICENSE\">" +
+                          "MIT License</a>." + " " + "And " +
+                          "<a href=\"https://github.com/y-chan/atomicswap-qt\">OSS</a>.")
 
 class HistoryView(QTreeView):
 
@@ -212,7 +212,7 @@ class HistoryView(QTreeView):
             self.model().setData(self.model().index(i, self.Columns.RECEIVE_VALUE), data["Receive"]["Value"])
             self.model().setData(self.model().index(i, self.Columns.SECRET_HASH), data["SecretHash"])
             status_label = QLabel()
-            icon = QPixmap(resource_path('qt', 'icons', status_icons[data["Status"]])).scaled(15, 15)
+            icon = QPixmap(resource_path("qt", "icons", status_icons[data["Status"]])).scaled(15, 15)
             status_label.setPixmap(icon)
             index = self.model().index(i, 0, QModelIndex())
             self.setIndexWidget(index, status_label)
@@ -254,7 +254,7 @@ class HistoryView(QTreeView):
     def delete_atomicswap_history(self, data: dict):
         send_coin = data["Send"]["Coin"]
         receive_coin = data["Receive"]["Coin"]
-        delete_question = QMessageBox.warning(self, 'Warning',
+        delete_question = QMessageBox.warning(self, "Warning",
                                               f"Delete {send_coin} to {receive_coin} atomicswap history?",
                                               QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
         if delete_question == QMessageBox.No:

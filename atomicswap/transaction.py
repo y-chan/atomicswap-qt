@@ -40,19 +40,19 @@ class OutPoint:
     def __init__(self, op_hash: bytes, index: int):
         self.hash = op_hash
         self.index = index
-        self.serialized_bytes = b''
+        self.serialized_bytes = b""
         self.change_flag = True
 
     def serialize(self) -> bytes:
         if self.change_flag:
-            self.serialized_bytes = self.hash + self.index.to_bytes(4, 'little')
+            self.serialized_bytes = self.hash + self.index.to_bytes(4, "little")
             self.change_flag = False
         return self.serialized_bytes
 
     def serialize_size(self) -> int:
         return len(self.serialize())
 
-    def change_params(self, op_hash=b'', index=0) -> None:
+    def change_params(self, op_hash=b"", index=0) -> None:
         if op_hash:
             self.hash = op_hash
         if index:
@@ -71,8 +71,8 @@ class TxIn:
         self.sig_script = sig_script
         self.witness = witness
         self.sequence = sequence
-        self.serialized_bytes = b''
-        self.serialized_witness_bytes = b''
+        self.serialized_bytes = b""
+        self.serialized_witness_bytes = b""
         self.change_flag = True
         self.change_witness_flag = True
 
@@ -81,11 +81,11 @@ class TxIn:
             self.serialized_bytes = self.prev_op.serialize()
             self.serialized_bytes = int_to_bytes(len(self.sig_script), self.serialized_bytes)
             self.serialized_bytes += self.sig_script
-            self.serialized_bytes += self.sequence.to_bytes(4, 'little')
+            self.serialized_bytes += self.sequence.to_bytes(4, "little")
             self.change_flag = False
         if not with_sig:
             serialized_bytes = self.prev_op.serialize()
-            serialized_bytes += self.sequence.to_bytes(4, 'little')
+            serialized_bytes += self.sequence.to_bytes(4, "little")
             return serialized_bytes
         return self.serialized_bytes
 
@@ -137,12 +137,12 @@ class TxOut:
     def __init__(self, value: int, pkscript: bytes):
         self.value = value
         self.pkscript = pkscript
-        self.serialized_bytes = b''
+        self.serialized_bytes = b""
         self.change_flag = True
 
     def serialize(self) -> bytes:
         if self.change_flag:
-            self.serialized_bytes += self.value.to_bytes(8, 'little')
+            self.serialized_bytes += self.value.to_bytes(8, "little")
             self.serialized_bytes = int_to_bytes(len(self.pkscript), self.serialized_bytes)
             self.serialized_bytes += self.pkscript
             self.change_flag = False
@@ -173,21 +173,21 @@ class MsgTx:
         self.locktime = locktime
         self.expiry_height = expiry_height
         self.coind = coind
-        self.serialized_bytes = b''
-        self.serialized_witness_bytes = b''
+        self.serialized_bytes = b""
+        self.serialized_witness_bytes = b""
         self.change_flag = True
         self.change_witness_flag = True
 
     def serialize(self, witness=False, with_sig=True) -> bytes:
         if self.change_flag or self.change_witness_flag:
-            serialized_bytes = self.version.to_bytes(4, 'little')
+            serialized_bytes = self.version.to_bytes(4, "little")
             if self.coind.ver_id:
                 header = self.version + 0x80000000
-                serialized_bytes = header.to_bytes(4, 'little')
-                serialized_bytes += self.coind.ver_id.to_bytes(4, 'little')
+                serialized_bytes = header.to_bytes(4, "little")
+                serialized_bytes += self.coind.ver_id.to_bytes(4, "little")
             do_witness = witness and self.has_witness()
             if do_witness:
-                serialized_bytes += b'\x00\x01'  # Witness Marker
+                serialized_bytes += b"\x00\x01"  # Witness Marker
             serialized_bytes = int_to_bytes(len(self.tx_ins), serialized_bytes)
             for tx_in in self.tx_ins:
                 serialized_bytes += tx_in.serialize(with_sig=with_sig)
@@ -197,10 +197,10 @@ class MsgTx:
             if do_witness:
                 for tx_in in self.tx_ins:
                     serialized_bytes += tx_in.serialize_witness()
-            serialized_bytes += self.locktime.to_bytes(4, 'little')
+            serialized_bytes += self.locktime.to_bytes(4, "little")
             if self.coind.ver_id:
-                serialized_bytes += self.expiry_height.to_bytes(4, 'little')
-                sapling_raw = b'\x00' * (8 + 1 + 1 + 1)  # ValueBalance + spend + output + joinsplits
+                serialized_bytes += self.expiry_height.to_bytes(4, "little")
+                sapling_raw = b"\x00" * (8 + 1 + 1 + 1)  # ValueBalance + spend + output + joinsplits
                 serialized_bytes += sapling_raw
             if witness:
                 self.change_witness_flag = False
@@ -324,7 +324,7 @@ def deserialize(tx_hex: str, coind: Coind, witness=False) -> MsgTx:
         value, tx_bytes = read_int(tx_bytes, 8)
         size, tx_bytes = read_ver_int(tx_bytes)
         pkscript, tx_bytes = read_bytes(tx_bytes, size)
-        if pkscript == b'' and witness:
+        if pkscript == b"" and witness:
             raise DeserializeError("This transaction hasn't SegWit!")
         tx_out = TxOut(value, pkscript)
         tx_outs.append(tx_out)
@@ -340,11 +340,11 @@ def deserialize(tx_hex: str, coind: Coind, witness=False) -> MsgTx:
     locktime, tx_bytes = read_int(tx_bytes, 4)
     if coind.ver_id:
         expiry_height, tx_bytes = read_int(tx_bytes, 4)
-        assert tx_bytes == b'\x00' * (8 + 1 + 1 + 1)  # Sapling Raw: ValueBalance + spend + output + joinsplits
-        tx_bytes = b''
+        assert tx_bytes == b"\x00" * (8 + 1 + 1 + 1)  # Sapling Raw: ValueBalance + spend + output + joinsplits
+        tx_bytes = b""
     else:
         expiry_height = 0
-    assert tx_bytes == b''
+    assert tx_bytes == b""
     assert coind.tx_version == version
     return MsgTx(coind, tx_ins, tx_outs, locktime, expiry_height)
 
@@ -354,7 +354,7 @@ def deserialize_witness(tx_hex: str, coind: Coind) -> MsgTx:
 
 
 def read_ver_int(byte: bytes) -> Tuple:
-    discriminant = int.from_bytes(byte[:1], 'little')
+    discriminant = int.from_bytes(byte[:1], "little")
     if discriminant == 0xff:
         size = 8
     elif discriminant == 0xfe:
@@ -363,12 +363,12 @@ def read_ver_int(byte: bytes) -> Tuple:
         size = 2
     else:
         return discriminant, byte[1:]
-    out = int.from_bytes(byte[1:1 + size], 'little')
+    out = int.from_bytes(byte[1:1 + size], "little")
     return out, byte[1 + size:]
 
 
 def read_int(byte: bytes, len: int) -> Tuple[int, bytes]:
-    out = int.from_bytes(byte[:len], 'little')
+    out = int.from_bytes(byte[:len], "little")
     return out, byte[len:]
 
 
@@ -379,20 +379,20 @@ def read_bytes(byte: bytes, len: int) -> Tuple[bytes, bytes]:
 
 def int_to_bytes(count: int, serialized_bytes: bytes) -> bytes:
     if count < 0xfd:
-        return serialized_bytes + count.to_bytes(1, 'little')
+        return serialized_bytes + count.to_bytes(1, "little")
     if count <= 0xffff:
         hed = 0xfd
-        return serialized_bytes + hed.to_bytes(1, 'little') + count.to_bytes(2, 'little')
+        return serialized_bytes + hed.to_bytes(1, "little") + count.to_bytes(2, "little")
     if count <= 0xffffffff:
         hed = 0xfe
-        return serialized_bytes + hed.to_bytes(1, 'little') + count.to_bytes(4, 'little')
+        return serialized_bytes + hed.to_bytes(1, "little") + count.to_bytes(4, "little")
     hed = 0xff
-    return serialized_bytes + hed.to_bytes(1, 'little') + count.to_bytes(8, 'little')
+    return serialized_bytes + hed.to_bytes(1, "little") + count.to_bytes(8, "little")
 
 
 def ver_int_serialize_size(param: Union[int, bytes]) -> int:
     if isinstance(param, bytes):
-        discriminant = int.from_bytes(param[:1], 'little')
+        discriminant = int.from_bytes(param[:1], "little")
     else:
         discriminant = param
     if discriminant == 0xff:
@@ -415,10 +415,10 @@ def atomic_swap_extract(contract: Union[bytes, list]) -> dict:
                          4, opcodes.OP_CHECKLOCKTIMEVERIFY, opcodes.OP_DROP, opcodes.OP_DUP, opcodes.OP_HASH160,
                          20, opcodes.OP_ENDIF, opcodes.OP_EQUALVERIFY, opcodes.OP_CHECKSIG]
     assert standard_contract == pushes["script"], "This isn't atomicswap contract!"
-    assert int.from_bytes(pushes["data"][0], 'little') == 32, "This isn't atomicswap contract!"
+    assert int.from_bytes(pushes["data"][0], "little") == 32, "This isn't atomicswap contract!"
     secret_hash = pushes["data"][1]
     receiver_addr_hash = pushes["data"][2]
-    locktime = int.from_bytes(pushes["data"][3], 'little')
+    locktime = int.from_bytes(pushes["data"][3], "little")
     sender_addr_hash = pushes["data"][4]
     return {"secret_hash": secret_hash,
             "recipient_addr_hash": receiver_addr_hash,

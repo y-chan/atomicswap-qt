@@ -62,7 +62,7 @@ def redeem(contract_str: str, contract_tx_str: str, secret_str: str, coind: Coin
     contract_txhash = contract_tx.get_txid()[::-1]
     contract_outpoint = OutPoint(contract_txhash, contract_out)
     fee_per_kb, min_fee_per_kb = coind.get_fee_per_byte()
-    tx_in = TxIn(contract_outpoint, b'', [], 0xffffffff)
+    tx_in = TxIn(contract_outpoint, b"", [], 0xffffffff)
     tx_out = TxOut(0, unparse_script(out_script))
     if coind.ver_id:
         expiry_height = coind.getblockcount() + 20
@@ -82,8 +82,8 @@ def redeem(contract_str: str, contract_tx_str: str, secret_str: str, coind: Coin
     redeem_tx.change_params(tx_in=tx_in)
     redeem_txhash = redeem_tx.get_txid()
     redeem_fee_per_kb = amount_format(calcFeePerKb(fee, redeem_tx.serialize_witness_size()), coind.decimals)
-    print("Redeem fee:", to_amount(fee, coind.decimals), coind.unit, "(" + redeem_fee_per_kb, coind.unit + "/KB)")
-    print("Redeem transaction (" + redeem_txhash.hex() + ")")
+    print("Redeem fee:", to_amount(fee, coind.decimals), coind.unit, f"({redeem_fee_per_kb} {coind.unit}/KB)")
+    print(f"Redeem transaction ({redeem_txhash.hex()})")
     print(redeem_tx.serialize_witness().hex())
     if verify:
         pass

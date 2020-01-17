@@ -50,8 +50,7 @@ class Coind:
         self.p2pkh = p2pkh
         self.p2sh = p2sh
         self.bech32_hrp = bech32_hrp
-        self.endpoint = "http://{}:{}@127.0.0.1:{}/".format(user, pwd, port)
-        self.url = 'http://localhost:' + str(port)
+        self.endpoint = f"http://{user}:{pwd}@127.0.0.1:{port}/"
         self.user = user
         self.pwd = pwd
         self.sign_wallet = sign_wallet
@@ -60,84 +59,84 @@ class Coind:
         self.decimals = decimals
 
     def make_request(self, method: str, params=[]) -> dict:
-        headers = {'content-type': 'text/plain;'}
-        data = json.dumps({'id': None, 'method': method, 'params': params})
+        headers = {"content-type": "text/plain;"}
+        data = json.dumps({"id": None, "method": method, "params": params})
 
         try:
             return requests.post(self.endpoint, headers=headers, data=data).json()
         except Exception:
             return {
-                'result': None,
-                'error': {
-                    'message': '{} backend is down or not responding'.format(self.name)
+                "result": None,
+                "error": {
+                    "message": f"{self.name} backend is down or not responding"
                 }
             }
 
     def simple_request(self, method: str) -> Union[dict, str]:
         result = self.make_request(method)
 
-        if result['result'] is None:
-            raise InvalidRPCError(result['error']['message'])
+        if result["result"] is None:
+            raise InvalidRPCError(result["error"]["message"])
 
-        return result['result']
+        return result["result"]
 
     def getinfo(self) -> dict:
-        return self.simple_request('getinfo')
+        return self.simple_request("getinfo")
 
     def getwalletinfo(self) -> dict:
-        return self.simple_request('getwalletinfo')
+        return self.simple_request("getwalletinfo")
 
     def getblockchaininfo(self) -> dict:
-        return self.simple_request('getblockchaininfo')
+        return self.simple_request("getblockchaininfo")
 
     def getnetworkinfo(self) -> dict:
-        return self.simple_request('getnetworkinfo')
+        return self.simple_request("getnetworkinfo")
 
     def getblockcount(self) -> int:
-        return int(self.simple_request('getblockcount'))
+        return int(self.simple_request("getblockcount"))
 
     def getnewaddress(self) -> str:
-        result = self.make_request('getnewaddress', ['', 'legacy'])
-        address = result['result']
+        result = self.make_request("getnewaddress", ["", "legacy"])
+        address = result["result"]
 
         if address is None:
-            result = self.make_request('getnewaddress')
-            address = result['result']
+            result = self.make_request("getnewaddress")
+            address = result["result"]
 
             if address is None:
-                raise InvalidRPCError(result['error']['message'])
+                raise InvalidRPCError(result["error"]["message"])
 
         return address
 
     def getrawchangeaddress(self) -> str:
-        result = self.make_request('getrawchangeaddress', ['legacy'])
-        address = result['result']
+        result = self.make_request("getrawchangeaddress", ["legacy"])
+        address = result["result"]
 
         if address is None:
-            result = self.make_request('getrawchangeaddress')
-            address = result['result']
+            result = self.make_request("getrawchangeaddress")
+            address = result["result"]
 
             if address is None:
-                raise InvalidRPCError(result['error']['message'])
+                raise InvalidRPCError(result["error"]["message"])
 
         return address
 
     def dumpprivkey(self, address: str) -> str:
-        result = self.make_request('dumpprivkey', [address])
-        wif = result['result']
+        result = self.make_request("dumpprivkey", [address])
+        wif = result["result"]
 
         if wif is None:
-            raise InvalidRPCError(result['error']['message'])
+            raise InvalidRPCError(result["error"]["message"])
 
         return wif
 
     def fundrawtransaction(self, tx_hex: str, fee: float) -> dict:
-        result = self.make_request('fundrawtransaction', [tx_hex, {'feeRate': fee}])
-        tx_dict = result['result']
+        result = self.make_request("fundrawtransaction", [tx_hex, {"feeRate": fee}])
+        tx_dict = result["result"]
 
         if tx_dict is None:
-            result = self.make_request('fundrawtransaction', [tx_hex])
-            tx_dict = result['result']
+            result = self.make_request("fundrawtransaction", [tx_hex])
+            tx_dict = result["result"]
 
             if tx_dict is None:
                 raise InvalidRPCError(result["error"]["message"])
@@ -146,43 +145,43 @@ class Coind:
 
     def signrawtransaction(self, tx_hex: str) -> dict:
         if self.sign_wallet:
-            result = self.make_request('signrawtransactionwithwallet', [tx_hex])
+            result = self.make_request("signrawtransactionwithwallet", [tx_hex])
 
         else:
-            result = self.make_request('signrawtransaction', [tx_hex])
+            result = self.make_request("signrawtransaction", [tx_hex])
 
-        tx_dict = result['result']
+        tx_dict = result["result"]
 
         if tx_dict is None:
-            raise InvalidRPCError(result['error']['message'])
+            raise InvalidRPCError(result["error"]["message"])
 
         return tx_dict
 
     def sendrawtransaction(self, tx_hex: str) -> str:
-        result = self.make_request('sendrawtransaction', [tx_hex])
-        tx_dict = result['result']
+        result = self.make_request("sendrawtransaction", [tx_hex])
+        tx_dict = result["result"]
 
         if tx_dict is None:
-            raise InvalidRPCError(result['error']['message'])
+            raise InvalidRPCError(result["error"]["message"])
 
         return tx_dict
 
     def estimatesmartfee(self, blocks=6) -> dict:
-        result = self.make_request('estimatesmartfee', [blocks])
-        fee = result['result']
+        result = self.make_request("estimatesmartfee", [blocks])
+        fee = result["result"]
 
         if fee is None:
-            raise InvalidRPCError(result['error']['message'])
+            raise InvalidRPCError(result["error"]["message"])
 
         return fee
 
     def get_fee_per_byte(self) -> Tuple[int, int]:
         try:
-            relayfee = to_satoshis(self.getnetworkinfo()['relayfee'], self.decimals)
-            paytxfee = to_satoshis(self.getwalletinfo()['paytxfee'], self.decimals)
+            relayfee = to_satoshis(self.getnetworkinfo()["relayfee"], self.decimals)
+            paytxfee = to_satoshis(self.getwalletinfo()["paytxfee"], self.decimals)
 
         except InvalidRPCError:
-            raise GetFeeError('Can\'t get fee amount!')
+            raise GetFeeError("Can't get fee amount!")
 
         if paytxfee != 0:
             maxfee = paytxfee
@@ -193,7 +192,7 @@ class Coind:
             return maxfee, relayfee
 
         try:
-            usefee = to_satoshis(self.estimatesmartfee()['feerate'], self.decimals)
+            usefee = to_satoshis(self.estimatesmartfee()["feerate"], self.decimals)
 
             if relayfee > usefee:
                 usefee = relayfee
@@ -203,7 +202,7 @@ class Coind:
         except:
             pass
 
-        print('Warning: falling back to mempool relay fee policy')
+        print("Warning: falling back to mempool relay fee policy")
         return relayfee, relayfee
 
 def make_coin_data(coin: str) -> Tuple[int, Coind]:
@@ -211,76 +210,76 @@ def make_coin_data(coin: str) -> Tuple[int, Coind]:
     low = coin.lower()
     path = get_path()
 
-    conf_path = '/' + low + '.conf'
+    conf_path = "/" + low + ".conf"
     if "Testnet" in coin:
         low, testnet = low.split()
-        conf_path = '/' + testnet + '/' + low + '.conf'
-        with open(resource_path('coins', low + '_' + testnet + '.json')) as f:
+        conf_path = "/" + testnet + "/" + low + ".conf"
+        with open(resource_path("coins", low + "_" + testnet + ".json")) as f:
             coin_json = json.loads(f.read())
 
     else:
-        with open(resource_path('coins', low + '.json')) as f:
+        with open(resource_path("coins", low + ".json")) as f:
             coin_json = json.loads(f.read())
 
-    if 'path' in coin_json:
-        conf_full_path = os.path.expanduser(coin_json['path'][os_name])
+    if "path" in coin_json:
+        conf_full_path = os.path.expanduser(coin_json["path"][os_name])
 
     else:
-        if os_name == 'Linux':
+        if os_name == "Linux":
             conf_full_path = path + "." + low + conf_path
 
         else:
             conf_full_path = path + coin + conf_path
 
     def make_conf():
-        with open(conf_full_path, mode='w') as f:
+        with open(conf_full_path, mode="w") as f:
             config = {
-                'server': 1,
-                'rpcallowip': '127.0.0.1',
-                'rpcport': coin_json['port'],
-                'rpcuser': 'user',
-                'rpcpassword': 'pass',
+                "server": 1,
+                "rpcallowip": "127.0.0.1",
+                "rpcport": coin_json["port"],
+                "rpcuser": "user",
+                "rpcpassword": "pass",
             }
 
             for key in config:
-                line = '{}={}\n'.format(key, config[key])
+                line = f"{key}={config[key]}" + "\n"
                 f.write(line)
 
-        raise RestartWallet('Please restart coind or coin-qt')
+        raise RestartWallet("Please restart coind or coin-qt")
 
     try:
         with open(conf_full_path) as f:
-            conf_list = [s.strip().replace(' ', '') for s in f.readlines()]
+            conf_list = [s.strip().replace(" ", "") for s in f.readlines()]
             server_flag = False
             rpc_flag = 0
-            user = ''
-            pwd = ''
+            user = ""
+            pwd = ""
             port = 0
 
             for conf in conf_list:
-                if 'server=1' == conf:
+                if "server=1" == conf:
                     server_flag = True
 
-                if 'rpcallowip=' in conf:
+                if "rpcallowip=" in conf:
                     rpc_flag += 1
 
-                if 'rpcuser=' in conf:
+                if "rpcuser=" in conf:
                     rpc_flag += 1
                     user = conf[8:]
 
-                if 'rpcpassword=' in conf:
+                if "rpcpassword=" in conf:
                     pwd = conf[12:]
                     rpc_flag += 1
 
-                if 'rpcport=' in conf:
+                if "rpcport=" in conf:
                     port = conf[8:]
                     rpc_flag += 1
 
             if not server_flag:
-                raise GetConfigError('"server=1" is not found!')
+                raise GetConfigError("\"server=1\" is not found!")
 
             if rpc_flag != 4:
-                raise GetConfigError('rpc setting is but!')
+                raise GetConfigError("rpc setting is but!")
 
     except FileNotFoundError:
         make_conf()
@@ -293,19 +292,19 @@ def make_coin_data(coin: str) -> Tuple[int, Coind]:
     tx_ver = 2
     ver_id = 0
 
-    if 'sign_wallet' in coin_json:
-        sign_wallet = coin_json['sign_wallet']
+    if "sign_wallet" in coin_json:
+        sign_wallet = coin_json["sign_wallet"]
 
-    if 'decimals' in coin_json:
-        decimals = coin_json['decimals']
+    if "decimals" in coin_json:
+        decimals = coin_json["decimals"]
 
-    if 'tx_ver' in coin_json:
-        tx_ver = coin_json['tx_ver']
+    if "tx_ver" in coin_json:
+        tx_ver = coin_json["tx_ver"]
 
-    if 'ver_id' in coin_json:
-        ver_id = coin_json['ver_id']
+    if "ver_id" in coin_json:
+        ver_id = coin_json["ver_id"]
 
-    coind = Coind(coin_json['name'], coin_json['unit'], coin_json['p2pkh'], coin_json['p2sh'],
-                    coin_json['bech32_hrp'], port, user, pwd, sign_wallet, tx_ver, ver_id, decimals)
+    coind = Coind(coin_json["name"], coin_json["unit"], coin_json["p2pkh"], coin_json["p2sh"],
+                    coin_json["bech32_hrp"], port, user, pwd, sign_wallet, tx_ver, ver_id, decimals)
 
-    return coin_json['req_ver'], coind
+    return coin_json["req_ver"], coind

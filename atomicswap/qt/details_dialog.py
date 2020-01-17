@@ -20,7 +20,7 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from PyQt5.QtWidgets import (QDialog, QDesktopWidget, QWidget, QGroupBox,
+from PyQt5.QtWidgets import (QDialog, QDesktopWidget, QGroupBox,
                              QVBoxLayout, QLabel, QLineEdit, QTextEdit)
 
 from .main_window import MainWindow

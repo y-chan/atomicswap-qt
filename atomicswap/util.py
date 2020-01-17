@@ -53,12 +53,12 @@ def resource_path(*parts):
 
 def get_path() -> str:
     os_name = platform.system()
-    if os_name == 'Windows':
-        path = os.path.expanduser('~/AppData/Roaming/')
-    elif os_name == 'Darwin':
-        path = os.path.expanduser('~/Library/Application Support/')
-    elif os_name == 'Linux':
-        path = os.path.expanduser('~/')
+    if os_name == "Windows":
+        path = os.path.expanduser("~/AppData/Roaming/")
+    elif os_name == "Darwin":
+        path = os.path.expanduser("~/Library/Application Support/")
+    elif os_name == "Linux":
+        path = os.path.expanduser("~/")
     else:
         raise Exception("Your using OS isn't support!")
     return path
@@ -140,4 +140,4 @@ def to_amount(value: int, decimals=8) -> float:
     return round(value / math.pow(10, decimals), decimals)
 
 def amount_format(value: float, decimals=8) -> str:
-    return '%.*f' % (decimals, value)
+    return "%.*f" % (decimals, value)

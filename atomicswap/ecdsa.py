@@ -54,21 +54,21 @@ class Signature:
         sb = canonicalize_int(sig_s)
 
         length = 6 + len(rb) + len(sb)
-        b = (0x30).to_bytes(1, 'big')
-        b += (length - 2).to_bytes(1, 'big')
-        b += (0x02).to_bytes(1, 'big')
-        b += (len(rb)).to_bytes(1, 'big')
+        b = (0x30).to_bytes(1, "big")
+        b += (length - 2).to_bytes(1, "big")
+        b += (0x02).to_bytes(1, "big")
+        b += (len(rb)).to_bytes(1, "big")
         b += rb
-        b += (0x02).to_bytes(1, 'big')
-        b += (len(sb)).to_bytes(1, 'big')
+        b += (0x02).to_bytes(1, "big")
+        b += (len(sb)).to_bytes(1, "big")
         b += sb
         return b
 
 def canonicalize_int(val: int) -> bytes:
     try:
-        b = val.to_bytes(len(hex(val)[2:]) // 2, 'big')
+        b = val.to_bytes(len(hex(val)[2:]) // 2, "big")
     except:
-        b = val.to_bytes(len(hex(val)) // 2, 'big')
+        b = val.to_bytes(len(hex(val)) // 2, "big")
     if len(b) == 0:
         b = bytes(1)
     if b[0] & 0x80 != 0:
@@ -82,9 +82,9 @@ def sign_rfc6979(priv_key: int, in_hash: bytes) -> Signature:
     k = nonce_rfc6979(priv_key, in_hash)
     inv = mod_inv(k, n)
     try:
-        k_bytes = k.to_bytes(len(hex(k)[2:]), 'big')
+        k_bytes = k.to_bytes(len(hex(k)[2:]), "big")
     except:
-        k_bytes = k.to_bytes(len(hex(k)), 'big')
+        k_bytes = k.to_bytes(len(hex(k)), "big")
     r, _ = scalar_base_mult(k_bytes)
     r %= n
 
@@ -110,14 +110,14 @@ def nonce_rfc6979(priv_key: int, in_hash: bytes) -> int:
     bx = [int2octets(x, rolen), bits2octets(in_hash, rolen)]
 
     # Step B
-    v = b'\x01' * holen
+    v = b"\x01" * holen
 
     # Step C
-    k = b'\x00' * holen
+    k = b"\x00" * holen
 
     # Step D
     k = hmac.new(k, digestmod=alg)
-    k.update(v + b'\x00')
+    k.update(v + b"\x00")
     for i in bx:
         k.update(i)
     k = k.digest()
@@ -127,7 +127,7 @@ def nonce_rfc6979(priv_key: int, in_hash: bytes) -> int:
 
     # Step F
     k = hmac.new(k, digestmod=alg)
-    k.update(v + b'\x01')
+    k.update(v + b"\x01")
     for i in bx:
         k.update(i)
     k = k.digest()
@@ -138,7 +138,7 @@ def nonce_rfc6979(priv_key: int, in_hash: bytes) -> int:
     # Step H
     while True:
         # Step H1
-        t = b''
+        t = b""
 
         # Step H2
         while len(t) < rolen:
@@ -150,7 +150,7 @@ def nonce_rfc6979(priv_key: int, in_hash: bytes) -> int:
 
         if 1 <= secret < q:
             return secret
-        k = hmac.new(k, v + b'\x00', alg).digest()
+        k = hmac.new(k, v + b"\x00", alg).digest()
         v = hmac.new(k, v, alg).digest()
 
 
@@ -165,7 +165,7 @@ def egcd(a: int, b: int) -> Tuple[int, int, int]:
 def mod_inv(a: int, m: int):
     g, x, y = egcd(a, m)
     if g != 1:
-        raise Exception('modular inverse does not exist')
+        raise Exception("modular inverse does not exist")
     else:
         return x % m
 
@@ -174,7 +174,7 @@ def hash_to_int(v: bytes) -> int:
     order_bytes = (secp256k1.bitsize + 7) // 8
     if len(v) > order_bytes:
         v = v[:order_bytes]
-    ret = int.from_bytes(v, 'big')
+    ret = int.from_bytes(v, "big")
     excess = len(v) * 8 - secp256k1.bitsize
     if excess > 0:
         ret = ret >> excess
@@ -185,9 +185,9 @@ def hash_to_int(v: bytes) -> int:
 def int2octets(v: int, rolen: int) -> bytes:
     v_len = len(hex(v)[2:]) // 2
     try:
-        out = v.to_bytes(v_len, 'big')
+        out = v.to_bytes(v_len, "big")
     except:
-        out = v.to_bytes(v_len + 1, 'big')
+        out = v.to_bytes(v_len + 1, "big")
 
     if len(out) < rolen:
         out2 = bytes(rolen - len(out))
@@ -294,13 +294,13 @@ def pubkey_from_privkey(privkey: bytes) -> bytes:
     bit = y >> 0 & 1
     if bit == 1:
         _format |= 0x1
-    b = _format.to_bytes(1, 'big')
+    b = _format.to_bytes(1, "big")
     try:
         x_len = len(hex(x)[2:]) // 2
-        x_bytes = x.to_bytes(x_len, 'big')
+        x_bytes = x.to_bytes(x_len, "big")
     except:
         x_len = len(hex(x)) // 2
-        x_bytes = x.to_bytes(x_len, 'big')
+        x_bytes = x.to_bytes(x_len, "big")
     for i in range(32 - x_len):
-        b += (0).to_bytes(1, 'big')
+        b += (0).to_bytes(1, "big")
     return b + x_bytes
