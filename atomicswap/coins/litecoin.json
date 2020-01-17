@@ -1,9 +1,9 @@
 {
-  "name": "Litecoin",
-  "unit": "LTC",
-  "p2pkh": 0,
-  "p2sh": 5,
-  "bech32_hrp": "ltc",
-  "req_ver": 170000,
-  "port": 9332
+    "name": "Litecoin",
+    "unit": "LTC",
+    "p2pkh": 0,
+    "p2sh": 5,
+    "bech32_hrp": "ltc",
+    "req_ver": 170000,
+    "port": 9332
 }
