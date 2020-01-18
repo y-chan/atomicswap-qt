@@ -68,7 +68,7 @@ class Coind:
             return {
                 "result": None,
                 "error": {
-                    "message": f"{self.name} backend is down or not responding"
+                    "message": "{} backend is down or not responding".format(self.name)
                 }
             }
 

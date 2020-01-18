@@ -56,7 +56,7 @@ def base_encode(v: bytes, base: int) -> str:
     """encode v, which is a string of bytes, to base58."""
     assert_bytes(v)
     if base not in (58, 43):
-        raise ValueError(f"not supported base: {base}")
+        raise ValueError("not supported base: {}".format(base))
     chars = __b58chars
     if base == 43:
         chars = __b43chars
@@ -87,7 +87,7 @@ def base_decode(v: Union[bytes, str], length: Optional[int], base: int) -> Optio
     # assert_bytes(v)
     v = to_bytes(v, "ascii")
     if base not in (58, 43):
-        raise ValueError(f"not supported base: {base}")
+        raise ValueError("not supported base: {}".format(base))
     chars = __b58chars
     if base == 43:
         chars = __b43chars
@@ -95,7 +95,7 @@ def base_decode(v: Union[bytes, str], length: Optional[int], base: int) -> Optio
     for (i, c) in enumerate(v[::-1]):
         digit = chars.find(bytes([c]))
         if digit == -1:
-            raise ValueError(f"Forbidden character {c} for base {base}")
+            raise ValueError("Forbidden character {} for base {}".format(c, base))
         long_value += digit * (base ** i)
     result = bytearray()
     while long_value >= 256:

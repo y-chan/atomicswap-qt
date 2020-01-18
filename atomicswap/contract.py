@@ -133,7 +133,7 @@ def buildRefund(contract: Union[list, bytes], contract_tx: MsgTx, coind: Coind,
     value = contract_tx.tx_outs[i].value - refund_fee
     tx_out.change_params(value=value)
     if is_dust_output(tx_out, min_fee_per_kb):
-        raise BuildContractError(f"refund output value of {value} is dust")
+        raise BuildContractError("refund output value of {} is dust".format(value))
     tx_in = TxIn(contract_outpoint, b"", [], 0)
     refund_tx.change_params(tx_in=tx_in, tx_out=tx_out)
     refund_sig, refund_pubkey = createSig(refund_tx, 0, contract_bytes, refund_addr, coind)

@@ -67,7 +67,7 @@ if __name__ == "__main__":
         elif qc == "qt" or qc == "gui":
             qt_window()
         else:
-            print(f"Invalid command: {qc}")
+            print("Invalid command: {}".format(qc))
             command("help", [])
     else:
         qt_window()

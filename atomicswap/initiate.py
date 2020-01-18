@@ -46,10 +46,10 @@ def initiate(addr: str, amount: int, coind: Coind) -> Tuple[bytes, builtTuple]:
     print("Secret Hash:", secret_hash.hex())
     print("Contract Fee", to_amount(b.contractFee, coind.decimals), coind.unit, f"({contract_fee_per_kb} {coind.unit}/KB)")
     print("Refund Fee", to_amount(b.refundFee, coind.decimals), coind.unit, f"({refund_fee_per_kb} {coind.unit}/KB)")
-    print(f"Contract ({b.contractP2SH}):")
+    print("Contract ({}):".format(b.contractP2SH))
     print(b.contract.hex())
-    print(f"Contract Transaction ({b.contractTxHash.hex()}):")
+    print("Contract Transaction ({}):".format(b.contractTxHash.hex()))
     print(b.contractTx.serialize_witness().hex())
-    print(f"Refund Transaction ({refund_txhash.hex()}):")
+    print("Refund Transaction ({}):".format(refund_txhash.hex()))
     print(b.refundTx.serialize_witness().hex())
     return secret, b

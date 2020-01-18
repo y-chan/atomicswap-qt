@@ -132,7 +132,7 @@ class MainWindow(QMainWindow):
         refund_tx = asw.send_contract_tuple.refund_tx
         assert isinstance(refund_tx, MsgTx)
         send_question = QMessageBox.question(self, "Question",
-                                             f"Send transaction? ({refund_tx.get_txid().hex()})",
+                                             "Send transaction? ({})".format(refund_tx.get_txid().hex()),
                                              QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
         if send_question == QMessageBox.No:
             return
@@ -153,7 +153,7 @@ class MainWindow(QMainWindow):
     def about_dialog(self):
         QMessageBox.about(self,
                           "About atomicswap-qt - atomicswap-qt",
-                          f"<u><i><h1>atomicswap-qt Version {full_version}</h1></i></u>" + "<br/>" +
+                          "<u><i><h1>atomicswap-qt Version {}</h1></i></u>".format(full_version) + "<br/>" +
                           "Copyright(c) 2011-2020 The Electrum Developers" + "<br/>" +
                           "Copyright(c) 2013-2020 The btcsuite developers" + "<br/>" +
                           "Copyright(c) 2015-2020 The Decred developers" + "<br/>" +
@@ -255,7 +255,7 @@ class HistoryView(QTreeView):
         send_coin = data["Send"]["Coin"]
         receive_coin = data["Receive"]["Coin"]
         delete_question = QMessageBox.warning(self, "Warning",
-                                              f"Delete {send_coin} to {receive_coin} atomicswap history?",
+                                              "Delete {} to {} atomicswap history?".format(send_coin, receive_coin),
                                               QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
         if delete_question == QMessageBox.No:
             return

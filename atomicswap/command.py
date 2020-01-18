@@ -66,12 +66,12 @@ def command(cmd: str, params: list) -> None:
 
     def publish_transaction(tx_hex: str, tx_name: str, coind: Coind) -> None:
         while True:
-            print(f"Publish {tx_name} transaction? [y/N]:", end="")
+            print("Publish {} transaction? [y/N]:".format(tx_name), end="")
             i = input()
             i = i.lower()
             if i == "y" or i == "yes":
                 result = coind.sendrawtransaction(tx_hex)
-                print(f"Published {tx_name} transaction ({result})")
+                print("Published {} transaction ({})".format(tx_name, result))
                 return
             elif i == "n" or i == "no":
                 return
@@ -137,6 +137,6 @@ def command(cmd: str, params: list) -> None:
         elif cmd == "help":
             help()
     else:
-        print(f"Invalid command: {cmd}")
+        print("Invalid command: {}".format(cmd))
         help()
     return
