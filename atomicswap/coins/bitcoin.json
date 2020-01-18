@@ -1,9 +1,9 @@
 {
-  "name": "Bitcoin",
-  "unit": "BTC",
-  "p2pkh": 0,
-  "p2sh": 5,
-  "bech32_hrp": "bc",
-  "req_ver": 170000,
-  "port": 8332
+    "name": "Bitcoin",
+    "unit": "BTC",
+    "p2pkh": 0,
+    "p2sh": 5,
+    "bech32_hrp": "bc",
+    "req_ver": 170000,
+    "port": 8332
 }

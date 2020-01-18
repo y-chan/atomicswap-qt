@@ -38,12 +38,12 @@ from atomicswap.util import get_path, resource_path
 
 def qt_window():
     app = QApplication(sys.argv)
-    app.setWindowIcon(QIcon(resource_path('qt', 'icons', 'icons8-swap.png')))
+    app.setWindowIcon(QIcon(resource_path("qt", "icons", "icons8-swap.png")))
     ex = MainWindow()
     sys.exit(app.exec_())
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     argv = sys.argv
     get_path()
     if len(argv) >= 2:
@@ -67,7 +67,7 @@ if __name__ == '__main__':
         elif qc == "qt" or qc == "gui":
             qt_window()
         else:
-            print(f"Invalid command: {qc}")
+            print("Invalid command: {}".format(qc))
             command("help", [])
     else:
         qt_window()

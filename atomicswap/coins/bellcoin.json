@@ -1,9 +1,9 @@
 {
-  "name": "Bellcoin",
-  "unit": "BELL",
-  "p2pkh": 25,
-  "p2sh": 85,
-  "bech32_hrp": "bm",
-  "req_ver": 99999999,
-  "port": 25252
+    "name": "Bellcoin",
+    "unit": "BELL",
+    "p2pkh": 25,
+    "p2sh": 85,
+    "bech32_hrp": "bm",
+    "req_ver": 99999999,
+    "port": 25252
 }
