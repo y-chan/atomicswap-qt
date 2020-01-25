@@ -47,7 +47,7 @@ def assert_bytes(*args):
     try:
         for x in args:
             assert isinstance(x, (bytes, bytearray))
-    except:
+    except Exception:
         print("assert bytes failed", list(map(type, args)))
         raise
 
@@ -71,13 +71,13 @@ def base_encode(v: bytes, base: int) -> str:
     result.append(chars[long_value])
     # Bitcoin does a little leading-zero-compression:
     # leading 0-bytes in the input become leading-1s
-    nPad = 0
+    n_pad = 0
     for c in v:
         if c == 0x00:
-            nPad += 1
+            n_pad += 1
         else:
             break
-    result.extend([chars[0]] * nPad)
+    result.extend([chars[0]] * n_pad)
     result.reverse()
     return result.decode("ascii")
 
@@ -103,13 +103,13 @@ def base_decode(v: Union[bytes, str], length: Optional[int], base: int) -> Optio
         result.append(mod)
         long_value = div
     result.append(long_value)
-    nPad = 0
+    n_pad = 0
     for c in v:
         if c == chars[0]:
-            nPad += 1
+            n_pad += 1
         else:
             break
-    result.extend(b"\x00" * nPad)
+    result.extend(b"\x00" * n_pad)
     if length is not None and len(result) != length:
         return None
     result.reverse()
@@ -142,7 +142,7 @@ def b58_address_to_hash160(addr: str, coind: Coind) -> Tuple[bytes, bytes]:
 def is_p2pkh(addr: str, coind: Coind) -> bool:
     try:
         addrtype, h = b58_address_to_hash160(addr, coind)
-    except:
+    except Exception:
         return False
     if isinstance(coind.p2pkh, list) and addrtype != bytes(coind.p2pkh):
         return False
@@ -185,7 +185,7 @@ def b58_privkey_to_hash160(privkey: str) -> Tuple[bytes, bytes]:
         _bytes = base_decode(key, 38, base=58)
         if _bytes is None or _bytes[33] != 0x01:
             raise
-    except:
+    except Exception:
         _bytes = base_decode(key, 37, base=58)
         if _bytes is None:
             raise PrivkeyDecodeError("Privkey doesn't decode!")

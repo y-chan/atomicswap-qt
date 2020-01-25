@@ -28,7 +28,7 @@ import binascii
 from .address import sha256d
 from .coind import Coind
 from .script import unparse_script, parse_script
-from .opcodes import opcodes
+from .opcodes import Opcodes
 from .util import to_amount
 
 
@@ -132,6 +132,7 @@ class TxIn:
                 "sig_script": self.sig_script.hex(),
                 "witness": witness,
                 "sequence": self.sequence}
+
 
 class TxOut:
     def __init__(self, value: int, pkscript: bytes):
@@ -410,10 +411,10 @@ def atomic_swap_extract(contract: Union[bytes, list]) -> dict:
     if isinstance(contract, list):
         contract = unparse_script(contract)
     pushes = parse_script(contract)
-    standard_contract = [opcodes.OP_IF, opcodes.OP_SIZE, 1, opcodes.OP_EQUALVERIFY, opcodes.OP_SHA256,
-                         32, opcodes.OP_EQUALVERIFY, opcodes.OP_DUP, opcodes.OP_HASH160, 20, opcodes.OP_ELSE,
-                         4, opcodes.OP_CHECKLOCKTIMEVERIFY, opcodes.OP_DROP, opcodes.OP_DUP, opcodes.OP_HASH160,
-                         20, opcodes.OP_ENDIF, opcodes.OP_EQUALVERIFY, opcodes.OP_CHECKSIG]
+    standard_contract = [Opcodes.OP_IF, Opcodes.OP_SIZE, 1, Opcodes.OP_EQUALVERIFY, Opcodes.OP_SHA256,
+                         32, Opcodes.OP_EQUALVERIFY, Opcodes.OP_DUP, Opcodes.OP_HASH160, 20, Opcodes.OP_ELSE,
+                         4, Opcodes.OP_CHECKLOCKTIMEVERIFY, Opcodes.OP_DROP, Opcodes.OP_DUP, Opcodes.OP_HASH160,
+                         20, Opcodes.OP_ENDIF, Opcodes.OP_EQUALVERIFY, Opcodes.OP_CHECKSIG]
     assert standard_contract == pushes["script"], "This isn't atomicswap contract!"
     assert int.from_bytes(pushes["data"][0], "little") == 32, "This isn't atomicswap contract!"
     secret_hash = pushes["data"][1]
@@ -467,4 +468,4 @@ def is_dust_output(output: TxOut, fee_per_kb: int) -> bool:
 
 def is_unspendable(pkscript: bytes) -> bool:
     pops = parse_script(pkscript)
-    return len(pops) > 0 and pops["script"][0] == opcodes.OP_RETURN
+    return len(pops) > 0 and pops["script"][0] == Opcodes.OP_RETURN

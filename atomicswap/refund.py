@@ -22,7 +22,7 @@
 # SOFTWARE.
 
 from .coind import Coind
-from .contract import buildRefund, calcFeePerKb
+from .contract import build_refund, calc_fee_per_kb
 from .script import parse_script, mix_script
 from .transaction import atomic_swap_extract, deserialize, deserialize_witness, MsgTx
 from .util import to_amount, amount_format
@@ -36,22 +36,22 @@ def refund(contracr_str: str, contract_tx_str: str, coind: Coind) -> Tuple[MsgTx
     contract = binascii.a2b_hex(contracr_str)
     try:
         contract_tx = deserialize_witness(contract_tx_str, coind)
-    except:
+    except Exception:
         contract_tx = deserialize(contract_tx_str, coind)
     atomic_swap_extract(contract)
     fee_per_kb, min_fee_per_kb = coind.get_fee_per_byte()
     unparsed_contract = parse_script(contract)
     mixed_contract = mix_script(unparsed_contract)
-    refund_tx, refund_fee = buildRefund(mixed_contract, contract_tx,
-                                        coind, fee_per_kb, min_fee_per_kb)
+    refund_tx, refund_fee = build_refund(mixed_contract, contract_tx,
+                                         coind, fee_per_kb, min_fee_per_kb)
     return refund_tx, refund_fee
 
 
 def refund_print(refund_tx: MsgTx, refund_fee: int, coind: Coind) -> str:
     refund_txhash = refund_tx.get_txid()
-    refund_fee_per_kb = amount_format(calcFeePerKb(refund_fee, refund_tx.serialize_witness_size()), coind.decimals)
+    refund_fee_per_kb = amount_format(calc_fee_per_kb(refund_fee, refund_tx.serialize_witness_size()), coind.decimals)
     result = ("Refund fee: " + str(to_amount(refund_fee, coind.decimals)) + " " +
-              coind.unit, "({} {}/KB)".format(refund_fee_per_kb, coind.unit) + "\n"
+              coind.unit + "({} {}/KB)".format(refund_fee_per_kb, coind.unit) + "\n" +
               "Refund transaction({}): ".format(refund_txhash.hex()) + "\n" +
               refund_tx.serialize_witness().hex())
     return result

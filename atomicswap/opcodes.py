@@ -26,7 +26,7 @@ from enum import IntEnum
 from typing import Tuple
 
 
-class opcodes(IntEnum):
+class Opcodes(IntEnum):
     # push value
     OP_0 = 0x00
     OP_FALSE = OP_0
@@ -168,12 +168,13 @@ class opcodes(IntEnum):
 
 
 def opcode_search(opcode: int) -> Tuple:
-    for i in opcodes:
+    for i in Opcodes:
         if opcode == i:
             return i, True
     return opcode, False
 
-def remove_opcode(parsed_script: dict, opcode: opcodes) -> dict:
+
+def remove_opcode(parsed_script: dict, opcode: Opcodes) -> dict:
     pkscript = parsed_script["script"]
     data = parsed_script["data"]
     new_script = []

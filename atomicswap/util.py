@@ -73,7 +73,7 @@ def get_path() -> str:
     return path
 
 
-class History_DB:
+class HistoryDB:
     def __init__(self):
         self.path = os.path.join(get_path(), "atomicswap-qt")
         self.db_name = "history_db"
@@ -138,15 +138,18 @@ class History_DB:
                     data["Status"] = 2
                     self.delete_data(key)
                     self.add_data(data)
-            except:
+            except Exception:
                 pass
         return
+
 
 def to_satoshis(value: float, decimals=8) -> int:
     return int(value * math.pow(10, decimals))
 
+
 def to_amount(value: int, decimals=8) -> float:
     return round(value / math.pow(10, decimals), decimals)
+
 
 def amount_format(value: float, decimals=8) -> str:
     return "%.*f" % (decimals, value)

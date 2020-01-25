@@ -33,14 +33,18 @@ from .util import get_path, resource_path, to_satoshis
 class GetFeeError(Exception):
     pass
 
+
 class InvalidRPCError(Exception):
     pass
+
 
 class GetConfigError(Exception):
     pass
 
+
 class RestartWallet(Exception):
     pass
+
 
 class Coind:
     def __init__(self, name: str, unit: str, p2pkh: Union[int, list], p2sh: Union[int, list], bech32_hrp: str,
@@ -199,11 +203,12 @@ class Coind:
 
             return usefee, relayfee
 
-        except:
+        except Exception:
             pass
 
         print("Warning: falling back to mempool relay fee policy")
         return relayfee, relayfee
+
 
 def make_coin_data(coin: str) -> Tuple[int, Coind]:
     os_name = platform.system()
@@ -305,6 +310,6 @@ def make_coin_data(coin: str) -> Tuple[int, Coind]:
         ver_id = coin_json["ver_id"]
 
     coind = Coind(coin_json["name"], coin_json["unit"], coin_json["p2pkh"], coin_json["p2sh"],
-                    coin_json["bech32_hrp"], port, user, pwd, sign_wallet, tx_ver, ver_id, decimals)
+                  coin_json["bech32_hrp"], port, user, pwd, sign_wallet, tx_ver, ver_id, decimals)
 
     return coin_json["req_ver"], coind

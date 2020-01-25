@@ -23,8 +23,8 @@
 
 from .address import b58_address_to_hash160, hash160_to_b58_address, hash160
 from .coind import Coind
-from .contract import (estimateRedeemSerializeSize, fee_for_serialize_size, createSig,
-                       is_dust_output, verify, redeemP2SHContract, calcFeePerKb)
+from .contract import (estimate_redeem_serialize_size, fee_for_serialize_size, create_sig,
+                       is_dust_output, verify, redeem_p2sh_contract, calc_fee_per_kb)
 from .transaction import atomic_swap_extract, deserialize, deserialize_witness, MsgTx, OutPoint, TxIn, TxOut
 from .script import extract_pkccript_addrs, ScriptType, pay_to_addr_script, unparse_script
 from .util import to_amount, amount_format
@@ -43,7 +43,7 @@ def redeem(contract_str: str, contract_tx_str: str, secret_str: str, coind: Coin
     secret = binascii.a2b_hex(secret_str)
     try:
         contract_tx = deserialize_witness(contract_tx_str, coind)
-    except:
+    except Exception:
         contract_tx = deserialize(contract_tx_str, coind)
     pushes = atomic_swap_extract(contract)
     recipient_addr = hash160_to_b58_address(pushes["recipient_addr_hash"], coind.p2pkh)
@@ -71,15 +71,15 @@ def redeem(contract_str: str, contract_tx_str: str, secret_str: str, coind: Coin
     else:
         expiry_height = 0
     redeem_tx = MsgTx(coind, tx_in, tx_out, pushes["locktime"], expiry_height)
-    redeem_size = estimateRedeemSerializeSize(contract, redeem_tx.tx_outs)
+    redeem_size = estimate_redeem_serialize_size(contract, redeem_tx.tx_outs)
     fee = fee_for_serialize_size(fee_per_kb, redeem_size)
     value = contract_tx.tx_outs[contract_out].value - fee
     tx_out.change_params(value=value)
     if is_dust_output(tx_out, min_fee_per_kb):
         raise RedeemError("redeem output value of {} is dust".format(value))
     redeem_tx.change_params(tx_out=tx_out)
-    redeem_sig, redeem_pubkey = createSig(redeem_tx, 0, contract, recipient_addr, coind)
-    redeem_sig_script = unparse_script(redeemP2SHContract(contract, redeem_sig, redeem_pubkey, secret))
+    redeem_sig, redeem_pubkey = create_sig(redeem_tx, 0, contract, recipient_addr, coind)
+    redeem_sig_script = unparse_script(redeem_p2sh_contract(contract, redeem_sig, redeem_pubkey, secret))
     tx_in.change_params(sig_script=redeem_sig_script)
     redeem_tx.change_params(tx_in=tx_in)
     print(redeem_print(redeem_tx, fee, coind))
@@ -90,7 +90,7 @@ def redeem(contract_str: str, contract_tx_str: str, secret_str: str, coind: Coin
 
 def redeem_print(redeem_tx: MsgTx, fee: int, coind: Coind) -> str:
     redeem_txhash = redeem_tx.get_txid()
-    redeem_fee_per_kb = amount_format(calcFeePerKb(fee, redeem_tx.serialize_witness_size()), coind.decimals)
+    redeem_fee_per_kb = amount_format(calc_fee_per_kb(fee, redeem_tx.serialize_witness_size()), coind.decimals)
     result = ("Redeem fee: " + str(to_amount(fee, coind.decimals)) + " " +
               coind.unit + " ({}/KB)".format(redeem_fee_per_kb, coind.unit) + "\n" +
               "Redeem transaction ({}):".format(redeem_txhash.hex()) + "\n" +

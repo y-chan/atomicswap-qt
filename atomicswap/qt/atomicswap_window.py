@@ -36,7 +36,7 @@ from atomicswap.participate import participate
 from atomicswap.extractsecret import extractsecret
 from atomicswap.redeem import redeem
 from atomicswap.util import coin_list, resource_path, to_satoshis
-from atomicswap.contract import builtTuple, buildRefund, BuildContractError
+from atomicswap.contract import built_tuple, build_refund, BuildContractError
 from atomicswap.transaction import deserialize_witness
 
 from .main_window import MainWindow
@@ -352,7 +352,7 @@ class AtomicSwapWindow(QMainWindow):
                 amount = float(self.i_amount_box.text().strip())
                 if not amount or not p2pkh:
                     raise
-            except:
+            except Exception:
                 self.next_button_1.setDisabled(True)
                 return
         else:
@@ -366,7 +366,7 @@ class AtomicSwapWindow(QMainWindow):
                                                      False)
                 label_text = "Contract is Ok, (Your receive amount {} {})".format(str(value), self.receive_coind.unit)
                 self.contract_status_label.setText(label_text)
-            except:
+            except Exception:
                 self.contract_status_label.setText("Contract isn't Ok")
                 self.next_button_1.setDisabled(True)
                 return
@@ -384,7 +384,7 @@ class AtomicSwapWindow(QMainWindow):
                 amount = float(self.p_amount_box.text().strip())
                 if not amount or not p2pkh:
                     raise
-            except:
+            except Exception:
                 self.next_button_1.setDisabled(True)
                 return
         self.next_button_1.setEnabled(True)
@@ -401,7 +401,7 @@ class AtomicSwapWindow(QMainWindow):
                     raise
                 label_text = "Contract is Ok, (Your receive amount {} {})".format(str(value), self.receive_coind.unit)
                 self.i_p_contract_status_label.setText(label_text)
-            except:
+            except Exception:
                 self.i_p_contract_status_label.setText("Contract isn't Ok")
                 self.next_button_1.setDisabled(True)
                 return
@@ -414,7 +414,7 @@ class AtomicSwapWindow(QMainWindow):
                               self.send_coind,
                               False)
                 self.redeem_tx_status_label.setText("Transaction is Ok")
-            except:
+            except Exception:
                 self.redeem_tx_status_label.setText("Transaction isn't Ok")
                 self.next_button_1.setDisabled(True)
                 return
@@ -671,19 +671,19 @@ class AtomicSwapWindow(QMainWindow):
                                                     self.receive_coind)
                 receive_contract = self.contract_box.text().strip()
                 receive_contract_tx = self.contract_tx_box.text().strip()
-        except:
+        except Exception:
             receive_value = None
             receive_contract = ""
             receive_contract_tx = ""
 
         try:
             send_redeem = self.redeem_tx.text().strip()
-        except:
+        except Exception:
             send_redeem = ""
 
         try:
             receive_redeem = self.receive_tx.serialize_witness().hex()
-        except:
+        except Exception:
             receive_redeem = ""
 
         return {
@@ -710,7 +710,7 @@ class AtomicSwapWindow(QMainWindow):
     def db_set_data(self, data: dict) -> None:
         try:
             self.parent.history_db.delete_data(self.secret_hash.hex())
-        except:
+        except Exception:
             pass
         self.parent.history_db.add_data(data)
         self.parent.history_view.update()
@@ -744,12 +744,12 @@ class AtomicSwapWindow(QMainWindow):
             contract_bytes = binascii.a2b_hex(contract)
             fee_per_kb, min_fee_per_kb = self.send_coind.get_fee_per_byte()
             contract_tx = deserialize_witness(data["Send"]["Transaction"], self.send_coind)
-            refund_tx, refund_fee = buildRefund(contract_bytes, contract_tx,
-                                                self.send_coind, fee_per_kb, min_fee_per_kb)
+            refund_tx, refund_fee = build_refund(contract_bytes, contract_tx,
+                                                 self.send_coind, fee_per_kb, min_fee_per_kb)
             p2sh_addr_hash = hash160(contract_bytes)
             p2sh_addr = hash160_to_b58_address(p2sh_addr_hash, self.send_coind.p2sh)
-            self.send_contract_tuple = builtTuple(contract_bytes, p2sh_addr, contract_tx.get_txid(),
-                                                  contract_tx, 0, refund_tx, refund_fee)
+            self.send_contract_tuple = built_tuple(contract_bytes, p2sh_addr, contract_tx.get_txid(),
+                                                   contract_tx, 0, refund_tx, refund_fee)
             self.contract_result.setPlainText("Contract: " + self.send_contract_tuple.contract.hex())
             self.contract_result.append("Contract Transaction: " +
                                         self.send_contract_tuple.contractTx.serialize_witness().hex())

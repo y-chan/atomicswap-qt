@@ -26,7 +26,7 @@ from typing import Union, Tuple
 
 from .address import b58_address_to_hash160, hash160_to_b58_address
 from .coind import Coind
-from .opcodes import opcodes, opcode_search
+from .opcodes import Opcodes, opcode_search
 from .segwit_addr import encode
 
 
@@ -67,12 +67,12 @@ def pay_to_addr_script(addr: str, coind: Coind) -> list:
 def pay_to_pubkey_hash_script(addr_hash: bytes) -> list:
     script = []
 
-    script.append(opcodes.OP_DUP)
-    script.append(opcodes.OP_HASH160)
+    script.append(Opcodes.OP_DUP)
+    script.append(Opcodes.OP_HASH160)
     script.append(len(addr_hash))
     script.append(addr_hash)
-    script.append(opcodes.OP_EQUALVERIFY)
-    script.append(opcodes.OP_CHECKSIG)
+    script.append(Opcodes.OP_EQUALVERIFY)
+    script.append(Opcodes.OP_CHECKSIG)
 
     return script
 
@@ -80,10 +80,10 @@ def pay_to_pubkey_hash_script(addr_hash: bytes) -> list:
 def pay_to_script_hash_script(addr_hash: bytes) -> list:
     script = []
 
-    script.append(opcodes.OP_HASH160)
+    script.append(Opcodes.OP_HASH160)
     script.append(len(addr_hash))
     script.append(addr_hash)
-    script.append(opcodes.OP_EQUAL)
+    script.append(Opcodes.OP_EQUAL)
     return script
 
 
@@ -107,15 +107,15 @@ def unparse_script(script: Union[dict, list]) -> bytes:
             if not opcode_bool:
                 out += data[count]
                 count += 1
-            elif opcode == opcodes.OP_PUSHDATA1:
+            elif opcode == Opcodes.OP_PUSHDATA1:
                 for i in range(2):
                     out += data[count]
                     count += 1
-            elif opcode == opcodes.OP_PUSHDATA2:
+            elif opcode == Opcodes.OP_PUSHDATA2:
                 for i in range(3):
                     out += data[count]
                     count += 1
-            elif opcode == opcodes.OP_PUSHDATA4:
+            elif opcode == Opcodes.OP_PUSHDATA4:
                 for i in range(5):
                     out += data[count]
                     count += 1
@@ -133,15 +133,15 @@ def mix_script(script: dict) -> list:
         if not opcode_bool:
             out.append(data[count])
             count += 1
-        elif opcode == opcodes.OP_PUSHDATA1:
+        elif opcode == Opcodes.OP_PUSHDATA1:
             for i in range(2):
                 out += data[count]
                 count += 1
-        elif opcode == opcodes.OP_PUSHDATA2:
+        elif opcode == Opcodes.OP_PUSHDATA2:
             for i in range(3):
                 out += data[count]
                 count += 1
-        elif opcode == opcodes.OP_PUSHDATA4:
+        elif opcode == Opcodes.OP_PUSHDATA4:
             for i in range(5):
                 out += data[count]
                 count += 1
@@ -187,14 +187,14 @@ def parse_script(script: Union[bytes, list]) -> dict:
             timer = opcode
         elif not script_bool and isinstance(script, list):
             timer = 1
-        elif opcode == opcodes.OP_PUSHDATA1:
+        elif opcode == Opcodes.OP_PUSHDATA1:
             data = 1
-        elif opcode == opcodes.OP_PUSHDATA2:
+        elif opcode == Opcodes.OP_PUSHDATA2:
             if isinstance(script, bytes):
                 data = 2
             else:
                 data = 1
-        elif opcode == opcodes.OP_PUSHDATA4:
+        elif opcode == Opcodes.OP_PUSHDATA4:
             if isinstance(script, bytes):
                 data = 4
             else:
@@ -221,13 +221,13 @@ def extract_pkccript_addrs(pkscript: Union[bytes, list], coind: Coind) -> Tuple[
 
 
 def discriminate_script_type(script: list, data: list) -> ScriptType:
-    is_pubkeyhash = [opcodes.OP_DUP, opcodes.OP_HASH160, 20, opcodes.OP_EQUALVERIFY, opcodes.OP_CHECKSIG]
-    is_witness_pubkeyhash = [opcodes.OP_0, 20]
-    is_scripthash = [opcodes.OP_HASH160, 20, opcodes.OP_EQUAL]
-    is_witness_scripthash = [opcodes.OP_0, 32]
+    is_pubkeyhash = [Opcodes.OP_DUP, Opcodes.OP_HASH160, 20, Opcodes.OP_EQUALVERIFY, Opcodes.OP_CHECKSIG]
+    is_witness_pubkeyhash = [Opcodes.OP_0, 20]
+    is_scripthash = [Opcodes.OP_HASH160, 20, Opcodes.OP_EQUAL]
+    is_witness_scripthash = [Opcodes.OP_0, 32]
     script_len = len(script)
     if script_len == 2 and (len(data[0]) == 33 or len(data[0]) == 65) \
-            and script[1] == opcodes.OP_CHECKSIG:
+            and script[1] == Opcodes.OP_CHECKSIG:
         return ScriptType.Pubkey
     elif script == is_pubkeyhash:
         return ScriptType.PubkeyHash
@@ -245,22 +245,22 @@ def discriminate_script_type(script: list, data: list) -> ScriptType:
 
 
 def is_smallint(opcode: int) -> bool:
-    if opcode == opcodes.OP_0 and opcodes.OP_1 <= opcode <= opcodes.OP_16:
+    if opcode == Opcodes.OP_0 and Opcodes.OP_1 <= opcode <= Opcodes.OP_16:
         return True
     return False
 
 
 def as_smallint(opcode: int) -> int:
-    if opcode == opcodes.OP_0:
+    if opcode == Opcodes.OP_0:
         return 0
-    return opcode - (opcodes.OP_1 - 1)
+    return opcode - (Opcodes.OP_1 - 1)
 
 
 def is_multisig(script: list, data: list) -> bool:
     script_len = len(script)
     if script_len < 4 or not is_smallint(script[0]) \
             or not is_smallint(script[script_len - 2]) \
-            or script[script_len - 1] != opcodes.OP_CHECKMULTISIG \
+            or script[script_len - 1] != Opcodes.OP_CHECKMULTISIG \
             or script_len - 2 - 1 != as_smallint(script[script_len - 2]):
         return False
     for opcode in data[1:script_len - 2]:
@@ -271,8 +271,8 @@ def is_multisig(script: list, data: list) -> bool:
 
 def is_nulldata(script: list, data: list) -> bool:
     script_len = len(script)
-    if script_len == 1 and script[0] == opcodes.OP_RETURN:
+    if script_len == 1 and script[0] == Opcodes.OP_RETURN:
         return True
-    return script_len == 2 and script[0] == opcodes.OP_RETURN \
-           and (is_smallint(script[1]) or script[1] <= opcodes.OP_PUSHDATA4) \
-           and len(data[0]) <= 80
+    return (script_len == 2 and script[0] == Opcodes.OP_RETURN
+            and (is_smallint(script[1]) or script[1] <= Opcodes.OP_PUSHDATA4)
+            and len(data[0]) <= 80)

@@ -33,7 +33,7 @@ import binascii
 def extractsecret(redeem_tx_str: str, secret_hash_str: str, coind: Coind, logging=True) -> bytes:
     try:
         redeem_tx = deserialize_witness(redeem_tx_str, coind)
-    except:
+    except Exception:
         redeem_tx = deserialize(redeem_tx_str, coind)
     secret_hash = binascii.a2b_hex(secret_hash_str)
     assert len(secret_hash) == secretSize, "SecretHash is miss!"

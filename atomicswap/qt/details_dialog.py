@@ -25,6 +25,7 @@ from PyQt5.QtWidgets import (QDialog, QDesktopWidget, QGroupBox,
 
 from .main_window import MainWindow
 
+
 class DetailsDialog(QDialog):
     def __init__(self, parent: MainWindow, data: dict):
         super().__init__()

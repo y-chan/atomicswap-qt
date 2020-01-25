@@ -36,9 +36,9 @@ from atomicswap.redeem import redeem, redeem_print
 from atomicswap.refund import refund, refund_print
 
 from atomicswap.coind import make_coin_data, InvalidRPCError, GetConfigError, RestartWallet
-from atomicswap.contract import builtTuple
+from atomicswap.contract import built_tuple
 from atomicswap.transaction import MsgTx
-from atomicswap.util import History_DB, resource_path, status_icons, coin_list, command_list, to_satoshis
+from atomicswap.util import HistoryDB, resource_path, status_icons, coin_list, command_list, to_satoshis
 from atomicswap.version import full_version
 
 import atomicswap
@@ -53,7 +53,7 @@ class MainWindow(QMainWindow):
         self.width = 800
         self.height = 500
         self.coind = None
-        self.history_db = History_DB()
+        self.history_db = HistoryDB()
         self.initiate_result = None
         self.participate_result = None
         self.redeem_result = None
@@ -301,7 +301,7 @@ class MainWindow(QMainWindow):
         asw = AtomicSwapWindow(self)
         try:
             error = asw.resume_atomicswap(data)
-        except:
+        except Exception:
             error = "Fatal problem has occurred!"
         if error:
             QMessageBox.critical(self, "Error", error, QMessageBox.Ok, QMessageBox.Ok)
@@ -327,7 +327,7 @@ class MainWindow(QMainWindow):
         try:
             result = asw.receive_coind.sendrawtransaction(refund_tx.serialize_witness().hex())
             assert result == refund_tx.get_txid().hex()
-        except:
+        except Exception:
             QMessageBox.warning(self, "Failed", "Transaction broadcast was fail.", QMessageBox.Ok, QMessageBox.Ok)
             return
         QMessageBox.information(self, "Succeed", "Transaction was broadcast.", QMessageBox.Ok, QMessageBox.Ok)
@@ -496,8 +496,8 @@ class MainWindow(QMainWindow):
 
     def publish_tx(self):
         index = self.command_combo.currentIndex()
-        if (not isinstance(self.initiate_result, builtTuple) and index == 0) or \
-                (not isinstance(self.participate_result, builtTuple) and index == 1) or \
+        if (not isinstance(self.initiate_result, built_tuple) and index == 0) or \
+                (not isinstance(self.participate_result, built_tuple) and index == 1) or \
                 (not isinstance(self.redeem_result, MsgTx) and index == 2) or \
                 (not isinstance(self.refund_result, MsgTx) and index == 5):
             return

@@ -23,7 +23,7 @@
 
 from .coind import Coind
 from .address import sha256, is_p2pkh
-from .contract import secretSize, contractTuple, calcFeePerKb, buildContract, builtTuple
+from .contract import secretSize, contract_tuple, calc_fee_per_kb, build_contract, built_tuple
 from .util import to_amount, amount_format
 
 import secrets
@@ -32,22 +32,22 @@ from datetime import datetime
 from typing import Tuple
 
 
-def initiate(addr: str, amount: int, coind: Coind) -> Tuple[bytes, builtTuple]:
+def initiate(addr: str, amount: int, coind: Coind) -> Tuple[bytes, built_tuple]:
     assert is_p2pkh(addr, coind), "Address isn't P2PKH."
     secret = secrets.token_bytes(secretSize)
     secret_hash = sha256(secret)
     locktime = int(time.mktime(datetime.now().timetuple())) + 48 * 60 * 60
-    contract = contractTuple(addr, amount, locktime, secret_hash)
-    b = buildContract(contract, coind)
+    contract = contract_tuple(addr, amount, locktime, secret_hash)
+    b = build_contract(contract, coind)
     print(initiate_print(secret, b, coind))
     return secret, b
 
 
-def initiate_print(secret: bytes, b: builtTuple, coind: Coind) -> str:
+def initiate_print(secret: bytes, b: built_tuple, coind: Coind) -> str:
     refund_txhash = b.refundTx.get_txid()
-    contract_fee_per_kb = amount_format(calcFeePerKb(b.contractFee, b.contractTx.serialize_witness_size()),
+    contract_fee_per_kb = amount_format(calc_fee_per_kb(b.contractFee, b.contractTx.serialize_witness_size()),
                                         coind.decimals)
-    refund_fee_per_kb = amount_format(calcFeePerKb(b.refundFee, b.refundTx.serialize_witness_size()), coind.decimals)
+    refund_fee_per_kb = amount_format(calc_fee_per_kb(b.refundFee, b.refundTx.serialize_witness_size()), coind.decimals)
     result = ("Secret: " + secret.hex() + "\n" +
               "Secret Hash: " + sha256(secret).hex() + "\n" +
               "Contract Fee: " + str(to_amount(b.contractFee, coind.decimals)) + " " +
