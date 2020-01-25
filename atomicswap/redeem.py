@@ -31,12 +31,14 @@ from .util import to_amount, amount_format
 
 import binascii
 
+from typing import Tuple
+
 
 class RedeemError(Exception):
     pass
 
 
-def redeem(contract_str: str, contract_tx_str: str, secret_str: str, coind: Coind) -> MsgTx:
+def redeem(contract_str: str, contract_tx_str: str, secret_str: str, coind: Coind) -> Tuple[MsgTx, int]:
     contract = binascii.a2b_hex(contract_str)
     secret = binascii.a2b_hex(secret_str)
     try:
@@ -80,11 +82,17 @@ def redeem(contract_str: str, contract_tx_str: str, secret_str: str, coind: Coin
     redeem_sig_script = unparse_script(redeemP2SHContract(contract, redeem_sig, redeem_pubkey, secret))
     tx_in.change_params(sig_script=redeem_sig_script)
     redeem_tx.change_params(tx_in=tx_in)
-    redeem_txhash = redeem_tx.get_txid()
-    redeem_fee_per_kb = amount_format(calcFeePerKb(fee, redeem_tx.serialize_witness_size()), coind.decimals)
-    print("Redeem fee:", to_amount(fee, coind.decimals), coind.unit, f"({redeem_fee_per_kb} {coind.unit}/KB)")
-    print("Redeem transaction ({})".format(redeem_txhash.hex()))
-    print(redeem_tx.serialize_witness().hex())
+    print(redeem_print(redeem_tx, fee, coind))
     if verify:
         pass
-    return redeem_tx
+    return redeem_tx, fee
+
+
+def redeem_print(redeem_tx: MsgTx, fee: int, coind: Coind) -> str:
+    redeem_txhash = redeem_tx.get_txid()
+    redeem_fee_per_kb = amount_format(calcFeePerKb(fee, redeem_tx.serialize_witness_size()), coind.decimals)
+    result = ("Redeem fee: " + str(to_amount(fee, coind.decimals)) + " " +
+              coind.unit + " ({}/KB)".format(redeem_fee_per_kb, coind.unit) + "\n" +
+              "Redeem transaction ({}):".format(redeem_txhash.hex()) + "\n" +
+              redeem_tx.serialize_witness().hex())
+    return result

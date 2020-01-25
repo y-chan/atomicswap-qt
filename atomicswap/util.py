@@ -44,6 +44,15 @@ coin_list = [
     "MicroBitcoin"
 ]
 
+command_list = [
+    "initiate",
+    "participate",
+    "redeem",
+    "extractsecret",
+    "auditcontract",
+    "refund"
+]
+
 pkg_dir = os.path.split(os.path.realpath(__file__))[0]
 
 

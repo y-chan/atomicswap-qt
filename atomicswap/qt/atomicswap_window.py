@@ -582,20 +582,20 @@ class AtomicSwapWindow(QMainWindow):
                     self.secret = extractsecret(self.redeem_tx.text().strip(),
                                                 self.secret_hash.hex(),
                                                 self.send_coind)
-                    self.receive_tx = redeem(self.contract_box.text().strip(),
-                                             self.contract_tx_box.text().strip(),
-                                             self.secret.hex(),
-                                             self.receive_coind)
+                    self.receive_tx, _ = redeem(self.contract_box.text().strip(),
+                                                self.contract_tx_box.text().strip(),
+                                                self.secret.hex(),
+                                                self.receive_coind)
                 except atomicswap.coind.InvalidRPCError as e:
                     self.statusBar().showMessage(str(e))
                     return
                 count += 1
             else:
                 try:
-                    self.receive_tx = redeem(self.i_p_contract.text().strip(),
-                                             self.i_p_tx.text().strip(),
-                                             self.secret.hex(),
-                                             self.receive_coind)
+                    self.receive_tx, _ = redeem(self.i_p_contract.text().strip(),
+                                                self.i_p_tx.text().strip(),
+                                                self.secret.hex(),
+                                                self.receive_coind)
                 except atomicswap.coind.InvalidRPCError as e:
                     self.statusBar().showMessage(str(e))
                     return

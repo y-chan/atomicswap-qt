@@ -35,6 +35,13 @@ from typing import Tuple
 
 
 def auditcontract(contract_str: str, contract_tx_str: str, coind: Coind, logging=True) -> Tuple[bool, bytes, float]:
+    result, reach_bool, secret_hash, amount = auditcontract_print(contract_str, contract_tx_str, coind)
+    if logging:
+        print(result)
+    return reach_bool, secret_hash, amount
+
+
+def auditcontract_print(contract_str: str, contract_tx_str: str, coind: Coind) -> Tuple[str, bool, bytes, float]:
     contract = binascii.a2b_hex(contract_str)
     try:
         contract_tx = deserialize_witness(contract_tx_str, coind)
@@ -60,16 +67,16 @@ def auditcontract(contract_str: str, contract_tx_str: str, coind: Coind, logging
     locktime = pushes["locktime"]
     dt = datetime.fromtimestamp(locktime)
     reach_bool = locktime >= now
-    if logging:
-        print("Contract address:", contract_addr)
-        print("Contract value:", to_amount(contract_tx.tx_outs[contract_out].value, coind.decimals), coind.unit)
-        print("Recipient address:", recipient_addr)
-        print("Author's refund address:", refund_addr)
-        print("Secret hash:", pushes["secret_hash"].hex())
-        print("Locktime:", dt)
-        if reach_bool:
-            reach = timedelta(seconds=locktime - now)
-            print("Locktime reached in", reach)
-        else:
-            print("Contract refund time lock has expired")
-    return reach_bool, pushes["secret_hash"], to_amount(contract_tx.tx_outs[contract_out].value, coind.decimals)
+    result = ("Contract address: " + contract_addr + "\n" +
+              "Contract value: " +
+              str(to_amount(contract_tx.tx_outs[contract_out].value, coind.decimals)) + " " + coind.unit + "\n" +
+              "Recipient address: " + recipient_addr + "\n" +
+              "Author's refund address: " + refund_addr + "\n" +
+              "Secret hash: " + pushes["secret_hash"].hex() + "\n" +
+              "Locktime: " + str(dt))
+    if reach_bool:
+        reach = timedelta(seconds=locktime - now)
+        result += "Locktime reached in " + str(reach)
+    else:
+        result += "Contract refund time lock has expired"
+    return result, reach_bool, pushes["secret_hash"], to_amount(contract_tx.tx_outs[contract_out].value, coind.decimals)

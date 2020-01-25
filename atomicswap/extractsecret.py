@@ -43,6 +43,11 @@ def extractsecret(redeem_tx_str: str, secret_hash_str: str, coind: Coind, loggin
         for sig in data:
             if sha256(sig) == secret_hash:
                 if logging:
-                    print("Secret:", sig.hex())
+                    print(extractsecret_print(sig.hex()))
                 return sig
     raise Exception("Tx doesn't contain secret!")
+
+
+def extractsecret_print(sig: str) -> str:
+    result = "Secret: " + sig
+    return result

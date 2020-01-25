@@ -120,7 +120,7 @@ def command(cmd: str, params: list) -> None:
             if params_len == 4:
                 _, coind = make_coin_data(params[3])
                 params[3] = coind
-                redeem_tx = redeem(*params)
+                redeem_tx, _ = redeem(*params)
                 publish_transaction(redeem_tx.serialize_witness().hex(), "redeem", coind)
             else:
                 params_invalid()
@@ -129,7 +129,7 @@ def command(cmd: str, params: list) -> None:
             if params_len == 3:
                 _, coind = make_coin_data(params[2])
                 params[2] = coind
-                refund_tx = refund(*params)
+                refund_tx, _ = refund(*params)
                 publish_transaction(refund_tx.serialize_witness().hex(), "refund", coind)
             else:
                 params_invalid()

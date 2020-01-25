@@ -31,22 +31,30 @@ import time
 from datetime import datetime
 
 
-def participate(addr: str, amount: int, secret_hash: str, coind: Coind) -> builtTuple:
-    assert is_p2pkh(addr, coind)
-    secret_hash = binascii.a2b_hex(secret_hash)
+def participate(addr: str, amount: int, secret_hash_str: str, coind: Coind) -> builtTuple:
+    assert is_p2pkh(addr, coind), "Address isn't P2PKH."
+    secret_hash = binascii.a2b_hex(secret_hash_str)
     locktime = int(time.mktime(datetime.now().timetuple())) + 24 * 60 * 60
     contract = contractTuple(addr, amount, locktime, secret_hash)
     b = buildContract(contract, coind)
-    refund_txhash = b.refundTx.get_txid()
-    contract_fee_per_kb = amount_format(calcFeePerKb(b.contractFee, b.contractTx.serialize_witness_size()), coind.decimals)
-    refund_fee_per_kb = amount_format(calcFeePerKb(b.refundFee, b.refundTx.serialize_witness_size()), coind.decimals)
-    print("Secret Hash:", secret_hash.hex())
-    print("Contract Fee:", to_amount(b.contractFee, coind.decimals), coind.unit + f"({contract_fee_per_kb} {coind.unit}/KB)")
-    print("Refund Fee:", to_amount(b.refundFee, coind.decimals), coind.unit + f"({refund_fee_per_kb} {coind.unit}/KB)")
-    print("Contract ({}):".format(b.contractP2SH))
-    print(b.contract.hex())
-    print("Contract Transaction ({}):".format(b.contractTxHash.hex()))
-    print(b.contractTx.serialize_witness().hex())
-    print("Refund Transaction ({}):".format(refund_txhash.hex()))
-    print(b.refundTx.serialize_witness().hex())
+    print(participate_print(b, secret_hash_str, coind))
     return b
+
+
+def participate_print(b: builtTuple, secret_hash: str, coind: Coind) -> str:
+    refund_txhash = b.refundTx.get_txid()
+    contract_fee_per_kb = amount_format(calcFeePerKb(b.contractFee, b.contractTx.serialize_witness_size()),
+                                        coind.decimals)
+    refund_fee_per_kb = amount_format(calcFeePerKb(b.refundFee, b.refundTx.serialize_witness_size()), coind.decimals)
+    result = ("Secret Hash: " + secret_hash + "\n" +
+              "Contract Fee: " + str(to_amount(b.contractFee, coind.decimals)) + " " +
+              coind.unit + " ({} {}/KB)".format(contract_fee_per_kb, coind.unit) + "\n" +
+              "Refund Fee: " + str(to_amount(b.refundFee, coind.decimals)) + " " +
+              coind.unit + " ({} {}/KB)".format(refund_fee_per_kb, coind.unit) + "\n" +
+              "Contract ({}):".format(b.contractP2SH) + "\n" +
+              b.contract.hex() + "\n" +
+              "Contract Transaction ({}):".format(b.contractTxHash.hex()) + "\n" +
+              b.contractTx.serialize_witness().hex() + "\n" +
+              "Refund Transaction ({}):".format(refund_txhash.hex()) + "\n" +
+              b.refundTx.serialize_witness().hex())
+    return result
