@@ -20,5 +20,5 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-full_version = "0.1.0 (beta)"
-version = "0.1 (beta)"
+full_version = "0.2.0 (beta)"
+version = "0.2 (beta)"
