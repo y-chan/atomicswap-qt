@@ -11,13 +11,13 @@ I present the procedure.
     example json:
     ```
     {
-      "name": "Bitcoin",
-      "unit": "BTC",
-      "p2pkh": 0,
-      "p2sh": 5,
-      "bech32_hrp": "bc",
-      "req_ver": 170000,
-      "port": 8332
+        "name": "Bitcoin",
+        "unit": "BTC",
+        "p2pkh": 0,
+        "p2sh": 5,
+        "bech32_hrp": "bc",
+        "req_ver": 170000,
+        "port": 8332
     }
     ```
     * `name` params  
@@ -40,8 +40,12 @@ I present the procedure.
       For example, Koto needs set "4".
     * `ver_id` params (optional)  
       Version Group Id. Koto needs this params.
+    * `sign_wallet` params (optional)  
+      Sub params of `req_ver`. This params is bool type.
+      If this params is true, all version coind use "signrawtransactionwithwallet".
     * `path` params (optional)  
-      Custom coin directory path. For Example, MicroBitcoin needs this params.  
+      Custom coin directory path. Please set for each OS(Windows, Darwin, Linux).
+      For Example, MicroBitcoin needs this params.  
 * 2, Add coin icon to this folder.
   Please add coin icon.(png or jpg)
 * 3, Add coin name to coin_list
