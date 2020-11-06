@@ -40,3 +40,7 @@ class ASNS:
         if result.get("message") == "This server is working.":
             return True
         return False
+
+    def get_token(self) -> str:
+        result = self.make_get_requests("get_token/")
+        return result["token"]
