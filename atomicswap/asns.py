@@ -31,10 +31,10 @@ class ASNSConnect:
         self.endpoint = "http://192.168.1.189/"
         assert self.connection_check(), "Failed connect ASNS server."
 
-    def make_get_requests(self, path: str) -> dict:
+    def make_get_requests(self, path: str) -> Dict:
         return requests.get(f"{self.endpoint}{path}").json()
 
-    def make_post_requests(self, path: str, data: dict) -> dict:
+    def make_post_requests(self, path: str, data: Dict) -> Dict:
         return requests.post(f"{self.endpoint}{path}", json=data).json()
 
     def connection_check(self) -> bool:
