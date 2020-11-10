@@ -21,6 +21,8 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from typing import Tuple, Dict, Optional
+
 import requests
 
 
@@ -44,3 +46,73 @@ class ASNSConnect:
     def get_token(self) -> str:
         result = self.make_get_requests("get_token/")
         return result["token"]
+
+    def register_swap(
+            self,
+            token: str,
+            want_currency: str,
+            want_amount: int,
+            send_currency: str,
+            send_amount: int,
+            receive_address: str
+    ) -> Optional[str]:
+        data = {
+            "token": token,
+            "wantCurrency": want_currency,
+            "wantAmount": want_amount,
+            "sendCurrency": send_currency,
+            "sendAmount": send_amount,
+            "receiveAddress": receive_address
+        }
+        result = self.make_post_requests("register_swap/", data)
+        return result.get("error")
+
+    def get_swap_list(self) -> Dict:
+        result = self.make_get_requests("get_swap_list/")
+        return result["data"]
+
+    def initiate_swap(self, token: str, selected_swap: str, receive_address: str) -> Optional[str]:
+        data = {
+            "token": token,
+            "selectedSwap": selected_swap,
+            "receiveAddress": receive_address
+        }
+        result = self.make_post_requests("initiate_swap/", data)
+        return result.get("error")
+
+    def get_initiator_info(self, token: str) -> Tuple[str, str]:
+        result = self.make_post_requests("get_initiator_info/", {"token": token})
+        return result["initiatorAddress"], result["tokenHash"]
+
+    def participate_swap(self, token: str, raw_tx: str) -> Optional[str]:
+        data = {
+            "token": token,
+            "rawTransaction": raw_tx
+        }
+        result = self.make_post_requests("participate_swap/", data)
+        return result.get("error")
+
+    def get_swap_status(self, token_hash: str) -> str:
+        result = self.make_get_requests(f"get_swap_list/{token_hash}/")
+        return result["swapStatus"]
+
+    def redeem_swap(self, token: str, raw_tx: str, selected_swap: str) -> Optional[str]:
+        data = {
+            "token": token,
+            "rawTransaction": raw_tx,
+            "selectedSwap": selected_swap
+        }
+        result = self.make_post_requests("redeem_swap/", data)
+        return result.get("error")
+
+    def get_redeem_token(self, token: str) -> str:
+        result = self.make_post_requests("get_redeem_token/", {"token": token})
+        return result["token"]
+
+    def complete_swap(self, token: str, raw_tx: str) -> Optional[str]:
+        data = {
+            "token": token,
+            "rawTransaction": raw_tx
+        }
+        result = self.make_post_requests("complete_swap/", data)
+        return result.get("error")
