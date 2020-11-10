@@ -28,6 +28,7 @@ from PyQt5.QtCore import Qt
 from pyperclip import copy
 from typing import Tuple
 
+from atomicswap.asns import ASNSConnect
 from atomicswap.auditcontract import auditcontract
 from atomicswap.address import is_p2pkh, sha256, hash160, hash160_to_b58_address
 from atomicswap.coind import make_coin_data, GetConfigError, RestartWallet, InvalidRPCError
@@ -57,6 +58,8 @@ class AtomicSwapWindow(QMainWindow):
         self.send_coin_name = "Bitcoin"
         self.receive_coin_name = "Litecoin"
         self.parent = parent
+        self.asns = None
+        self.asns_token = None
         self.send_coind = None
         self.receive_coind = None
         self.initiate_flag = False
@@ -492,10 +495,17 @@ class AtomicSwapWindow(QMainWindow):
     def next_page(self):
         page_number = self.main_widget.currentIndex()
         count = 1
+        if self.asns is None:
+            try:
+                self.asns = ASNSConnect()
+            except AssertionError as e:
+                self.statusBar().showMessage(str(e))
         if page_number == 0:
             if self.send_coin_name == self.receive_coin_name:
                 self.statusBar().showMessage("Send coin and receive coin are same. Please reselect coin")
                 return
+            if self.asns_token is None:
+                self.asns_token = self.asns.get_token()
             check, _ = self.coind_check(True, self.send_coin_name)
             if not check:
                 return
