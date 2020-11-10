@@ -24,7 +24,7 @@
 import requests
 
 
-class ASNS:
+class ASNSConnect:
     def __init__(self):
         self.endpoint = "http://192.168.1.189/"
         self.connection_check()
