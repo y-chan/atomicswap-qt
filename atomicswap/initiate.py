@@ -32,9 +32,12 @@ from datetime import datetime
 from typing import Tuple
 
 
-def initiate(addr: str, amount: int, coind: Coind) -> Tuple[bytes, built_tuple]:
+def initiate(addr: str, amount: int, coind: Coind, custom_secret: bytes = None) -> Tuple[bytes, built_tuple]:
     assert is_p2pkh(addr, coind), "Address isn't P2PKH."
-    secret = secrets.token_bytes(secretSize)
+    if custom_secret is None:
+        secret = secrets.token_bytes(secretSize)
+    else:
+        secret = custom_secret
     secret_hash = sha256(secret)
     locktime = int(time.mktime(datetime.now().timetuple())) + 48 * 60 * 60
     contract = contract_tuple(addr, amount, locktime, secret_hash)
