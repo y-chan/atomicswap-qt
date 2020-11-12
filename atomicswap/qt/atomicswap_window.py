@@ -68,9 +68,12 @@ class AtomicSwapWindow(QMainWindow):
         self.send_coind = None  # type: Coind
         self.receive_coind = None  # type: Coind
         self.initiate_flag = False
+        self.register_flag = False
         self.secret = b""
         self.secret_hash = b""
         self.my_address = ""
+        self.i_addr = ""
+        self.p_addr = ""
         self.send_contract_tuple = None  # type: contract_tuple
         self.receive_tx = None  # type: MsgTx
         self.main_window = QWidget(self)
@@ -199,41 +202,45 @@ class AtomicSwapWindow(QMainWindow):
         self.ip_widget.addWidget(self.initiate_widget)
         self.participate_widget = QWidget()
         self.participate_vbox = QVBoxLayout(self.participate_widget)
-        self.address_hbox = QHBoxLayout()
-        self.my_address_label = QLabel()
-        self.address_copy_button = QPushButton("Copy")
-        self.address_hbox.addWidget(self.my_address_label)
-        self.address_hbox.addStretch(1)
-        self.address_hbox.addWidget(self.address_copy_button)
-        self.address_copy_button.clicked.connect(lambda: copy(self.my_address))
-        self.my_address_box = QLineEdit(self)
-        self.my_address_box.setReadOnly(True)
-        self.contract_status_label = QLabel("Contract isn't Ok")
-        self.contract_label = QLabel("Contract")
-        self.contract_box = QLineEdit(self)
-        self.contract_box.textEdited.connect(self.ip_edited)
-        self.contract_tx_label = QLabel("Contract Transaction")
-        self.contract_tx_box = QLineEdit(self)
-        self.contract_tx_box.textEdited.connect(self.ip_edited)
-        self.p_label = QLabel()
-        self.p_addr_label = QLabel()
-        self.p_addr_box = QLineEdit(self)
-        self.p_addr_box.textEdited.connect(self.ip_edited)
-        self.p_amount_label = QLabel("Amount")
-        self.p_amount_box = QLineEdit(self)
-        self.p_amount_box.textEdited.connect(self.ip_edited)
-        self.participate_vbox.addWidget(self.p_label)
-        self.participate_vbox.addLayout(self.address_hbox)
-        self.participate_vbox.addWidget(self.my_address_box)
-        self.participate_vbox.addWidget(self.contract_status_label)
-        self.participate_vbox.addWidget(self.contract_label)
-        self.participate_vbox.addWidget(self.contract_box)
-        self.participate_vbox.addWidget(self.contract_tx_label)
-        self.participate_vbox.addWidget(self.contract_tx_box)
-        self.participate_vbox.addWidget(self.p_addr_label)
-        self.participate_vbox.addWidget(self.p_addr_box)
-        self.participate_vbox.addWidget(self.p_amount_label)
-        self.participate_vbox.addWidget(self.p_amount_box)
+        self.p_step1_label = QLabel()
+        self.p_receive_amount_hbox = QHBoxLayout()
+        self.p_receive_amount_label = QLabel()
+        self.p_receive_amount_box = QLineEdit(self)
+        self.p_receive_amount_box.textEdited.connect(self.register_edited)
+        self.p_receive_amount_unit_label = QLabel()
+        self.p_receive_amount_hbox.addWidget(self.p_receive_amount_label)
+        self.p_receive_amount_hbox.addStretch(1)
+        self.p_receive_amount_hbox.addWidget(self.p_receive_amount_box)
+        self.p_receive_amount_hbox.addWidget(self.p_receive_amount_unit_label)
+        self.p_send_amount_hbox = QHBoxLayout()
+        self.p_send_amount_label = QLabel()
+        self.p_send_amount_box = QLineEdit(self)
+        self.p_send_amount_box.textEdited.connect(self.register_edited)
+        self.p_send_amount_unit_label = QLabel()
+        self.p_send_amount_hbox.addWidget(self.p_send_amount_label)
+        self.p_send_amount_hbox.addStretch(1)
+        self.p_send_amount_hbox.addWidget(self.p_send_amount_box)
+        self.p_send_amount_hbox.addWidget(self.p_send_amount_unit_label)
+        self.register_swap_hbox = QHBoxLayout()
+        self.p_step2_label = QLabel("Step2. Please press register swap button.")
+        self.register_swap_button = QPushButton("Register Swap")
+        self.register_swap_button.clicked.connect(self.register)
+        self.register_swap_hbox.addWidget(self.p_step2_label)
+        self.register_swap_hbox.addStretch(1)
+        self.register_swap_hbox.addWidget(self.register_swap_button)
+        self.get_initiator_hbox = QHBoxLayout()
+        self.p_step3_label = QLabel("Step3. Please press get initiator's info button until you can get it.")
+        self.get_initiator_button = QPushButton("Get initiator's info")
+        self.get_initiator_button.clicked.connect(self.get_initiator_info)
+        self.get_initiator_button.setDisabled(True)
+        self.get_initiator_hbox.addWidget(self.p_step3_label)
+        self.get_initiator_hbox.addStretch(1)
+        self.get_initiator_hbox.addWidget(self.get_initiator_button)
+        self.participate_vbox.addWidget(self.p_step1_label)
+        self.participate_vbox.addLayout(self.p_receive_amount_hbox)
+        self.participate_vbox.addLayout(self.p_send_amount_hbox)
+        self.participate_vbox.addLayout(self.register_swap_hbox)
+        self.participate_vbox.addLayout(self.get_initiator_hbox)
         self.participate_vbox.addStretch(1)
         self.ip_widget.addWidget(self.participate_widget)
         self.ip_widget.setCurrentIndex(0)
@@ -343,8 +350,48 @@ class AtomicSwapWindow(QMainWindow):
     def participate(self):
         assert self.main_widget.currentIndex() == 1
         self.initiate_flag = False
-        self.ip_edited()
+        self.next_button_1.setDisabled(True)
+        self.register_edited()
         self.ip_widget.setCurrentIndex(2)
+
+    def register(self):
+        assert self.main_widget.currentIndex() == 1
+        err = self.asns.register_swap(
+            self.asns_token,
+            self.receive_coind.unit,
+            to_satoshis(float(self.p_receive_amount_box.text())),
+            self.send_coind.unit,
+            to_satoshis(float(self.p_send_amount_box.text())),
+            self.my_address
+        )
+        if err:
+            self.statusBar().showMessage("Error has occurred: {}".format(err))
+            return
+        self.register_flag = True
+        self.register_swap_button.setDisabled(True)
+        self.get_initiator_button.setEnabled(True)
+
+    def get_initiator_info(self):
+        self.i_addr, self.secret_hash = self.asns.get_initiator_info(self.asns_token)
+        if self.i_addr is None and self.secret_hash is None:
+            self.statusBar().showMessage("Initiator not found yet...")
+            self.next_button_1.setDisabled(True)
+            return
+        self.statusBar().showMessage("Initiator found! Please press next button.")
+        self.get_initiator_button.setDisabled(True)
+        self.next_button_1.setEnabled(True)
+
+    def register_edited(self):
+        try:
+            r_amount = float(self.p_receive_amount_box.text().strip())
+            s_amount = float(self.p_send_amount_box.text().strip())
+        except Exception:
+            r_amount, s_amount = None, None
+
+        if r_amount and s_amount and not self.register_flag:
+            self.register_swap_button.setEnabled(True)
+        else:
+            self.register_swap_button.setDisabled(True)
 
     def ip_edited(self):
         if self.initiate_flag:
@@ -358,38 +405,6 @@ class AtomicSwapWindow(QMainWindow):
                 else:
                     self.i_addr_label.setText("{} address".format(self.send_coind.name))
                 amount = float(self.i_amount_box.text().strip())
-                if not amount or not p2pkh:
-                    raise
-            except Exception:
-                self.next_button_1.setDisabled(True)
-                return
-        else:
-            if not self.contract_box.text().strip() or not self.contract_tx_box.text().strip():
-                self.next_button_1.setDisabled(True)
-                return
-            try:
-                reach_bool, _, value = auditcontract(self.contract_box.text().strip(),
-                                                     self.contract_tx_box.text().strip(),
-                                                     self.receive_coind,
-                                                     False)
-                label_text = "Contract is Ok, (Your receive amount {} {})".format(str(value), self.receive_coind.unit)
-                self.contract_status_label.setText(label_text)
-            except Exception:
-                self.contract_status_label.setText("Contract isn't Ok")
-                self.next_button_1.setDisabled(True)
-                return
-            if not reach_bool:
-                self.statusBar().showMessage("Your input contract is over 48 hour from contract issue.")
-            if not self.p_addr_box.text().strip():
-                self.next_button_1.setDisabled(True)
-                return
-            try:
-                p2pkh = is_p2pkh(self.p_addr_box.text().strip(), self.send_coind)
-                if not p2pkh:
-                    self.p_addr_label.setText("{} address (Address isn't P2PKH)".format(self.send_coind.name))
-                else:
-                    self.p_addr_label.setText("{} address".format(self.send_coind.name))
-                amount = float(self.p_amount_box.text().strip())
                 if not amount or not p2pkh:
                     raise
             except Exception:
@@ -519,17 +534,18 @@ class AtomicSwapWindow(QMainWindow):
             if not check:
                 return
             self.i_label.setText("Please input participator's {} address and send amount.".format(self.send_coind.name))
-            self.p_label.setText("Please input initiator's Contract, Contract Transaction and " +
-                                 "{} address and send amount.".format(self.send_coind.name))
+            self.p_step1_label.setText("Step1. Please input amount of {} you want, and".format(self.receive_coind.name) + " " +
+                                 "amount of {} you send.".format(self.send_coind.name))
             self.i_addr_label.setText("{} address".format(self.send_coind.name))
-            self.p_addr_label.setText("{} address".format(self.send_coind.name))
-            self.my_address_label.setText("My {} address".format(self.receive_coin_name) +
-                                          "(Please copy and send to your trading partner.)")
+            self.p_receive_amount_label.setText("Amount of {} you want".format(self.receive_coind.name))
+            self.p_send_amount_label.setText("Amount of {} you send".format(self.send_coind.name))
+            self.p_receive_amount_unit_label.setText(self.receive_coind.unit)
+            self.p_send_amount_unit_label.setText(self.send_coind.unit)
             self.my_address = self.receive_coind.getnewaddress()
-            self.my_address_box.setText(self.my_address)
             self.button_widget.setCurrentIndex(1)
             self.i_amount_box.setValidator(QDoubleValidator(0, 999999999999, self.send_coind.decimals))
-            self.p_amount_box.setValidator(QDoubleValidator(0, 999999999999, self.send_coind.decimals))
+            self.p_receive_amount_box.setValidator(QDoubleValidator(0, 999999999999, self.send_coind.decimals))
+            self.p_send_amount_box.setValidator(QDoubleValidator(0, 999999999999, self.send_coind.decimals))
         elif page_number == 1:
             send_decimals = self.send_coind.decimals
             if self.initiate_flag:
@@ -550,7 +566,7 @@ class AtomicSwapWindow(QMainWindow):
                                                        self.receive_coind)
                 try:
                     self.send_contract_tuple = participate(self.p_addr_box.text(),
-                                                           to_satoshis(float(self.p_amount_box.text()), send_decimals),
+                                                           to_satoshis(float(self.p_send_amount_box.text()), send_decimals),
                                                            self.secret_hash.hex(),
                                                            self.send_coind)
                 except atomicswap.coind.InvalidRPCError as e:
@@ -746,7 +762,7 @@ class AtomicSwapWindow(QMainWindow):
             if not check:
                 return error
             self.i_amount_box.setValidator(QDoubleValidator(0, 999999999999, self.send_coind.decimals))
-            self.p_amount_box.setValidator(QDoubleValidator(0, 999999999999, self.send_coind.decimals))
+            self.p_send_amount_box.setValidator(QDoubleValidator(0, 999999999999, self.send_coind.decimals))
             self.secret_hash = binascii.a2b_hex(data["SecretHash"])
             if data["Type"] == "i":
                 self.initiate_flag = True
