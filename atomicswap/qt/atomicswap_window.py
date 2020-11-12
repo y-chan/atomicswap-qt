@@ -26,7 +26,7 @@ from PyQt5.QtGui import QPixmap, QDoubleValidator
 from PyQt5.QtCore import Qt
 
 from pyperclip import copy
-from typing import Tuple
+from typing import Tuple, TYPE_CHECKING
 
 from atomicswap.asns import ASNSConnect
 from atomicswap.auditcontract import auditcontract
@@ -45,6 +45,11 @@ from .main_window import MainWindow
 import atomicswap
 import binascii
 
+if TYPE_CHECKING:
+    from atomicswap.coind import Coind
+    from atomicswap.contract import contract_tuple
+    from atomicswap.transaction import MsgTx
+
 
 class AtomicSwapWindow(QMainWindow):
 
@@ -58,16 +63,16 @@ class AtomicSwapWindow(QMainWindow):
         self.send_coin_name = "Bitcoin"
         self.receive_coin_name = "Litecoin"
         self.parent = parent
-        self.asns = None
+        self.asns = None  # type: ASNSConnect
         self.asns_token = None
-        self.send_coind = None
-        self.receive_coind = None
+        self.send_coind = None  # type: Coind
+        self.receive_coind = None  # type: Coind
         self.initiate_flag = False
         self.secret = b""
         self.secret_hash = b""
         self.my_address = ""
-        self.send_contract_tuple = None
-        self.receive_tx = None
+        self.send_contract_tuple = None  # type: contract_tuple
+        self.receive_tx = None  # type: MsgTx
         self.main_window = QWidget(self)
         self.main_vbox = QVBoxLayout(self.main_window)
         self.main_widget = QStackedWidget()
