@@ -32,10 +32,20 @@ class ASNSConnect:
         assert self.connection_check(), "Failed connect ASNS server."
 
     def make_get_requests(self, path: str) -> Dict:
-        return requests.get(f"{self.endpoint}{path}").json()
+        try:
+            return requests.get(f"{self.endpoint}{path}").json()
+        except Exception:
+            return {
+                "error": "{} backend is down or not responding".format(self.endpoint)
+            }
 
     def make_post_requests(self, path: str, data: Dict) -> Dict:
-        return requests.post(f"{self.endpoint}{path}", json=data).json()
+        try:
+            return requests.post(f"{self.endpoint}{path}", json=data).json()
+        except Exception:
+            return {
+                "error": "{} backend is down or not responding".format(self.endpoint)
+            }
 
     def connection_check(self) -> bool:
         result = self.make_get_requests("")
