@@ -90,7 +90,7 @@ class ASNSConnect:
         result = self.make_post_requests("initiate_swap/", data)
         return result.get("error")
 
-    def get_initiator_info(self, token: str) -> Tuple[str, str]:
+    def get_initiator_info(self, token: str) -> Tuple[Optional[str], Optional[str]]:
         result = self.make_post_requests("get_initiator_info/", {"token": token})
         return result["initiatorAddress"], result["tokenHash"]
 
