@@ -500,6 +500,7 @@ class AtomicSwapWindow(QMainWindow):
                 self.asns = ASNSConnect()
             except AssertionError as e:
                 self.statusBar().showMessage(str(e))
+                return
         if page_number == 0:
             if self.send_coin_name == self.receive_coin_name:
                 self.statusBar().showMessage("Send coin and receive coin are same. Please reselect coin")
