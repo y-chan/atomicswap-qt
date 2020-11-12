@@ -28,7 +28,7 @@ import requests
 
 class ASNSConnect:
     def __init__(self):
-        self.endpoint = "http://192.168.1.189/"
+        self.endpoint = "http://192.168.1.189:8000/"
         assert self.connection_check(), "Failed connect ASNS server."
 
     def make_get_requests(self, path: str) -> Dict:
