@@ -81,10 +81,19 @@ class ASNSConnect:
         result = self.make_get_requests("get_swap_list/")
         return result["data"]
 
-    def initiate_swap(self, token: str, selected_swap: str, receive_address: str) -> Optional[str]:
+    def initiate_swap(
+            self,
+            token: str,
+            selected_swap: str,
+            initiate_contract: str,
+            initiate_rawtx: str,
+            receive_address: str
+    ) -> Optional[str]:
         data = {
             "token": token,
             "selectedSwap": selected_swap,
+            "contract": initiate_contract,
+            "rawTransaction": initiate_rawtx,
             "receiveAddress": receive_address
         }
         result = self.make_post_requests("initiate_swap/", data)
