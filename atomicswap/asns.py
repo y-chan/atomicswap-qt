@@ -103,9 +103,10 @@ class ASNSConnect:
         result = self.make_post_requests("get_initiator_info/", {"token": token})
         return result
 
-    def participate_swap(self, token: str, raw_tx: str) -> Optional[str]:
+    def participate_swap(self, token: str, contract: str, raw_tx: str) -> Optional[str]:
         data = {
             "token": token,
+            "contract": contract,
             "rawTransaction": raw_tx
         }
         result = self.make_post_requests("participate_swap/", data)
