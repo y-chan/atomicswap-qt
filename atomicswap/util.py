@@ -91,7 +91,7 @@ class HistoryDB:
     def write_db(self) -> None:
         os.makedirs(self.path, exist_ok=True)
         with open(os.path.join(self.path, self.db_name), "w") as db:
-            db.write(json.dumps(self.data))
+            db.write(json.dumps(self.data, indent=4))
 
     def add_data(self, data: dict) -> None:
         self.data.append(data)
