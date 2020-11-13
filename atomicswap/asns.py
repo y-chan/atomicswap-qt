@@ -85,15 +85,15 @@ class ASNSConnect:
             self,
             token: str,
             selected_swap: str,
-            initiate_contract: str,
-            initiate_rawtx: str,
+            contract: str,
+            rawtx: str,
             receive_address: str
     ) -> Optional[str]:
         data = {
             "token": token,
             "selectedSwap": selected_swap,
-            "contract": initiate_contract,
-            "rawTransaction": initiate_rawtx,
+            "contract": contract,
+            "rawTransaction": rawtx,
             "receiveAddress": receive_address
         }
         result = self.make_post_requests("initiate_swap/", data)
