@@ -71,8 +71,8 @@ def build_contract(contract: contract_tuple, coind: Coind) -> built_tuple:
     refund_addr = coind.getrawchangeaddress()
     _, refund_addr_bytes = b58_address_to_hash160(refund_addr, coind)
     _, to_addr_bytes = b58_address_to_hash160(contract.to_addr, coind)
-    atomic_swap_contract = atomic_swap_contract(refund_addr_bytes, to_addr_bytes, contract.locktime, contract.secret_hash)
-    contract_bytes = unparse_script(atomic_swap_contract)
+    atomic_swap = atomic_swap_contract(refund_addr_bytes, to_addr_bytes, contract.locktime, contract.secret_hash)
+    contract_bytes = unparse_script(atomic_swap)
     contract_hash160 = hash160(contract_bytes)
     p2sh_addr = hash160_to_b58_address(contract_hash160, coind.p2sh)
     p2sh_script = pay_to_addr_script(p2sh_addr, coind)
@@ -92,7 +92,7 @@ def build_contract(contract: contract_tuple, coind: Coind) -> built_tuple:
     signed_contract = coind.signrawtransaction(funded_contract)["hex"]
     contract_tx = deserialize_witness(signed_contract, coind)
     contract_txhash = contract_tx.get_txid()
-    refund_tx, refund_fee = build_refund(atomic_swap_contract, contract_tx,
+    refund_tx, refund_fee = build_refund(atomic_swap, contract_tx,
                                          coind, fee_per_kb, min_fee_per_kb)
     return built_tuple(contract_bytes, p2sh_addr, contract_txhash, contract_tx,
                        contract_fee, refund_tx, refund_fee)
