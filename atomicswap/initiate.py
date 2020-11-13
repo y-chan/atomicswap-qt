@@ -22,7 +22,7 @@
 # SOFTWARE.
 
 from .coind import Coind
-from .address import sha256, is_p2pkh
+from .address import sha256d, is_p2pkh
 from .contract import secretSize, contract_tuple, calc_fee_per_kb, build_contract, built_tuple
 from .util import to_amount, amount_format
 
@@ -38,7 +38,7 @@ def initiate(addr: str, amount: int, coind: Coind, custom_secret: bytes = None) 
         secret = secrets.token_bytes(secretSize)
     else:
         secret = custom_secret
-    secret_hash = sha256(secret)
+    secret_hash = sha256d(secret)
     locktime = int(time.mktime(datetime.now().timetuple())) + 48 * 60 * 60
     contract = contract_tuple(addr, amount, locktime, secret_hash)
     b = build_contract(contract, coind)
@@ -52,7 +52,7 @@ def initiate_print(secret: bytes, b: built_tuple, coind: Coind) -> str:
                                         coind.decimals)
     refund_fee_per_kb = amount_format(calc_fee_per_kb(b.refundFee, b.refundTx.serialize_witness_size()), coind.decimals)
     result = ("Secret: " + secret.hex() + "\n" +
-              "Secret Hash: " + sha256(secret).hex() + "\n" +
+              "Secret Hash: " + sha256d(secret).hex() + "\n" +
               "Contract Fee: " + str(to_amount(b.contractFee, coind.decimals)) + " " +
               coind.unit + " ({} {}/KB)".format(contract_fee_per_kb, coind.unit) + "\n" +
               "Refund Fee: " + str(to_amount(b.refundFee, coind.decimals)) + " " +
