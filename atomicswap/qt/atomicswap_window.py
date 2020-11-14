@@ -559,7 +559,7 @@ class AtomicSwapWindow(QMainWindow):
                 try:
                     self.send_contract_tuple = participate(
                         self.i_addr,
-                        to_satoshis(float(self.p_send_amount_box.text())),
+                        to_satoshis(float(self.p_send_amount_box.text()), send_decimals),
                         self.secret_hash.hex(),
                         self.send_coind
                     )
