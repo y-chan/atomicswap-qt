@@ -112,9 +112,13 @@ class ASNSConnect:
         result = self.make_post_requests("participate_swap/", data)
         return result.get("error")
 
-    def get_swap_status(self, token_hash: str) -> str:
-        result = self.make_get_requests(f"get_swap_list/{token_hash}/")
-        return result["swapStatus"]
+    def get_participator_info(self, token: str, selected_swap: str) -> Dict:
+        data = {
+            "token": token,
+            "selectedSwap": selected_swap
+        }
+        result = self.make_post_requests(f"get_participator_info/", data)
+        return result
 
     def redeem_swap(self, token: str, raw_tx: str, selected_swap: str) -> Optional[str]:
         data = {
