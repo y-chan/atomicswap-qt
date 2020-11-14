@@ -607,6 +607,7 @@ class AtomicSwapWindow(QMainWindow):
             if err:
                 self.statusBar().showMessage("Error has occurred: {}".format(err))
             self.back_button.setDisabled(True)
+            self.next_button_1.setDisabled(True)
             self.db_set_data(self.make_db_data(0))
         elif page_number == 2:
             if not self.initiate_flag:
