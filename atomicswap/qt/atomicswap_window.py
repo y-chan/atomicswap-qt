@@ -50,7 +50,7 @@ import binascii
 
 if TYPE_CHECKING:
     from atomicswap.coind import Coind
-    from atomicswap.contract import contract_tuple
+    from atomicswap.contract import built_tuple
     from atomicswap.transaction import MsgTx
 
 
@@ -79,7 +79,7 @@ class AtomicSwapWindow(QMainWindow):
         self.my_address = ""
         self.i_addr = ""
         self.p_addr = ""
-        self.send_contract_tuple = None  # type: contract_tuple
+        self.send_contract_tuple = None  # type: built_tuple
         self.receive_tx = None  # type: MsgTx
         self.main_window = QWidget(self)
         self.main_vbox = QVBoxLayout(self.main_window)
