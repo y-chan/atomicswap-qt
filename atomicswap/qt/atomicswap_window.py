@@ -722,6 +722,9 @@ class AtomicSwapWindow(QMainWindow):
             "Status": status,
             "Type": type,
             "Token": self.asns_token,
+            "Key": self.selected_swap["key"] if self.selected_swap is not None else sha256d(
+                base_decode(self.asns_token, 64, 58)
+            ).hex(),
             "Send": {
                 "Coin": self.send_coin_name,
                 "Value": send_value,
@@ -736,7 +739,6 @@ class AtomicSwapWindow(QMainWindow):
                 "Transaction": receive_contract_tx,
                 "Redeem": receive_redeem
             },
-            "Key": self.selected_swap["key"] if self.selected_swap is not None else sha256d(self.asns_token).hex(),
             "Secret": self.secret.hex(),
             "SecretHash": self.secret_hash.hex()
         }
