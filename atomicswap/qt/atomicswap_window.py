@@ -548,6 +548,7 @@ class AtomicSwapWindow(QMainWindow):
                         self.send_coind,
                         base_decode(self.asns_token, 64, 58)
                     )
+                    self.secret_hash = sha256d(self.secret)
                 except atomicswap.coind.InvalidRPCError as e:
                     self.statusBar().showMessage(str(e))
                     return
