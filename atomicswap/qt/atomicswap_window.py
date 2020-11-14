@@ -368,7 +368,10 @@ class AtomicSwapWindow(QMainWindow):
     def get_initiator_info(self):
         result = self.asns.get_initiator_info(self.asns_token)
         self.i_addr = result["initiatorAddress"]
-        self.secret_hash = binascii.a2b_hex(result["tokenHash"])
+        if result["tokenHash"]:
+            self.secret_hash = binascii.a2b_hex(result["tokenHash"])
+        else:
+            self.secret_hash = None
         contract = result["initiateContract"]
         raw_tx = result["initiateRawTransaction"]
         try:
