@@ -21,22 +21,25 @@
 # SOFTWARE.
 
 from PyQt5.QtWidgets import (QMainWindow, QWidget, QPushButton, QDesktopWidget, QHBoxLayout, QTextEdit, QLineEdit,
-                             QComboBox, QLabel, QVBoxLayout, QButtonGroup, QRadioButton, QStackedWidget, QMessageBox)
-from PyQt5.QtGui import QPixmap, QDoubleValidator
+                             QComboBox, QLabel, QVBoxLayout, QButtonGroup, QRadioButton, QStackedWidget, QMessageBox,
+                             QTreeView, QAbstractItemView, QHeaderView)
+from PyQt5.QtGui import QPixmap, QDoubleValidator, QStandardItemModel
 from PyQt5.QtCore import Qt
 
+from enum import IntEnum
+
 from pyperclip import copy
-from typing import Tuple, TYPE_CHECKING
+from typing import Tuple, Optional, TYPE_CHECKING
 
 from atomicswap.asns import ASNSConnect
 from atomicswap.auditcontract import auditcontract
-from atomicswap.address import is_p2pkh, sha256, hash160, hash160_to_b58_address
+from atomicswap.address import is_p2pkh, sha256, hash160, hash160_to_b58_address, base_decode
 from atomicswap.coind import make_coin_data, GetConfigError, RestartWallet, InvalidRPCError
 from atomicswap.initiate import initiate
 from atomicswap.participate import participate
 from atomicswap.extractsecret import extractsecret
 from atomicswap.redeem import redeem
-from atomicswap.util import coin_list, resource_path, to_satoshis
+from atomicswap.util import coin_list, resource_path, to_satoshis, to_amount
 from atomicswap.contract import built_tuple, build_refund, BuildContractError
 from atomicswap.transaction import deserialize_witness
 
@@ -64,7 +67,9 @@ class AtomicSwapWindow(QMainWindow):
         self.receive_coin_name = "Litecoin"
         self.parent = parent
         self.asns = None  # type: ASNSConnect
-        self.asns_token = None
+        self.asns_token = None  # type: str
+        self.swap_list = None  # type: dict
+        self.selected_swap = None  # type: dict
         self.send_coind = None  # type: Coind
         self.receive_coind = None  # type: Coind
         self.initiate_flag = False
@@ -186,18 +191,10 @@ class AtomicSwapWindow(QMainWindow):
         self.ip_widget.addWidget(self.none_widget)
         self.initiate_widget = QWidget()
         self.initiate_vbox = QVBoxLayout(self.initiate_widget)
-        self.i_label = QLabel()
-        self.i_addr_label = QLabel()
-        self.i_addr_box = QLineEdit(self)
-        self.i_addr_box.textEdited.connect(self.ip_edited)
-        self.i_amount_label = QLabel("Amount")
-        self.i_amount_box = QLineEdit(self)
-        self.i_amount_box.textEdited.connect(self.ip_edited)
-        self.initiate_vbox.addWidget(self.i_label)
-        self.initiate_vbox.addWidget(self.i_addr_label)
-        self.initiate_vbox.addWidget(self.i_addr_box)
-        self.initiate_vbox.addWidget(self.i_amount_label)
-        self.initiate_vbox.addWidget(self.i_amount_box)
+        self.i_step1_label = QLabel()
+        self.swap_list_view = SwapListView(self)
+        self.initiate_vbox.addWidget(self.i_step1_label)
+        self.initiate_vbox.addWidget(self.swap_list_view)
         self.initiate_vbox.addStretch(1)
         self.ip_widget.addWidget(self.initiate_widget)
         self.participate_widget = QWidget()
@@ -252,22 +249,6 @@ class AtomicSwapWindow(QMainWindow):
         self.ip_v_box.addWidget(self.participate_button)
         self.ip_v_box.addWidget(self.ip_widget)
         self.main_widget.addWidget(self.ip)
-
-        # confirm window
-        self.confirm = QWidget(self.main_widget)
-        self.confirm_vbox = QVBoxLayout(self.confirm)
-        self.copy_hbox = QHBoxLayout()
-        self.copy_label = QLabel("Please copy and send to your trading partner.")
-        self.copy_button = QPushButton("Copy")
-        self.copy_hbox.addWidget(self.copy_label)
-        self.copy_hbox.addStretch(1)
-        self.copy_hbox.addWidget(self.copy_button)
-        self.contract_result = QTextEdit(self)
-        self.contract_result.setReadOnly(True)
-        self.copy_button.clicked.connect(lambda: copy(self.contract_result.toPlainText()))
-        self.confirm_vbox.addLayout(self.copy_hbox)
-        self.confirm_vbox.addWidget(self.contract_result)
-        self.main_widget.addWidget(self.confirm)
 
         # redeem window
         self.redeem = QWidget()
@@ -344,7 +325,7 @@ class AtomicSwapWindow(QMainWindow):
     def initiate(self):
         assert self.main_widget.currentIndex() == 1
         self.initiate_flag = True
-        self.ip_edited()
+        self.next_button_1.setDisabled(True)
         self.ip_widget.setCurrentIndex(1)
 
     def participate(self):
@@ -353,6 +334,17 @@ class AtomicSwapWindow(QMainWindow):
         self.next_button_1.setDisabled(True)
         self.register_edited()
         self.ip_widget.setCurrentIndex(2)
+
+    def select_swap(self, key: str = None):
+        if key is None:
+            self.selected_swap = None
+            self.next_button_1.setDisabled(True)
+            return
+        assert key in list(self.swap_list.keys())
+        self.selected_swap = self.swap_list[key]
+        self.selected_swap["key"] = key
+        self.next_button_1.setEnabled(True)
+        self.next_button_1.setDefault(True)
 
     def register(self):
         assert self.main_widget.currentIndex() == 1
@@ -368,12 +360,27 @@ class AtomicSwapWindow(QMainWindow):
             self.statusBar().showMessage("Error has occurred: {}".format(err))
             return
         self.register_flag = True
+        self.p_receive_amount_box.setReadOnly(True)
+        self.p_send_amount_box.setReadOnly(True)
         self.register_swap_button.setDisabled(True)
         self.get_initiator_button.setEnabled(True)
 
     def get_initiator_info(self):
-        self.i_addr, self.secret_hash = self.asns.get_initiator_info(self.asns_token)
-        if self.i_addr is None and self.secret_hash is None:
+        result = self.asns.get_initiator_info(self.asns_token)
+        self.i_addr = result["initiatorAddress"]
+        self.secret_hash = result["tokenHash"]
+        contract = result["initiateContract"]
+        raw_tx = result["initiateRawTransaction"]
+        try:
+            _, secret_hash, amount = auditcontract(contract, raw_tx, self.receive_coind, False)
+        except Exception:
+            secret_hash, amount = None, None
+        if (
+                secret_hash != self.secret_hash or
+                float(self.p_receive_amount_box.text()) != amount or
+                self.i_addr is None or
+                self.secret_hash is None
+        ):
             self.statusBar().showMessage("Initiator not found yet...")
             self.next_button_1.setDisabled(True)
             return
@@ -392,26 +399,6 @@ class AtomicSwapWindow(QMainWindow):
             self.register_swap_button.setEnabled(True)
         else:
             self.register_swap_button.setDisabled(True)
-
-    def ip_edited(self):
-        if self.initiate_flag:
-            if not self.i_addr_box.text().strip():
-                self.next_button_1.setDisabled(True)
-                return
-            try:
-                p2pkh = is_p2pkh(self.i_addr_box.text().strip(), self.send_coind)
-                if not p2pkh:
-                    self.i_addr_label.setText("{} address (Address isn't P2PKH)".format(self.send_coind.name))
-                else:
-                    self.i_addr_label.setText("{} address".format(self.send_coind.name))
-                amount = float(self.i_amount_box.text().strip())
-                if not amount or not p2pkh:
-                    raise
-            except Exception:
-                self.next_button_1.setDisabled(True)
-                return
-        self.next_button_1.setEnabled(True)
-        self.next_button_1.setDefault(True)
 
     def redeem_edited(self):
         if self.initiate_flag:
@@ -533,27 +520,35 @@ class AtomicSwapWindow(QMainWindow):
             check, _ = self.coind_check(False, self.receive_coin_name)
             if not check:
                 return
-            self.i_label.setText("Please input participator's {} address and send amount.".format(self.send_coind.name))
-            self.p_step1_label.setText("Step1. Please input amount of {} you want, and".format(self.receive_coind.name) + " " +
-                                 "amount of {} you send.".format(self.send_coind.name))
-            self.i_addr_label.setText("{} address".format(self.send_coind.name))
+            self.i_step1_label.setText("Step1. Please select swap from list below.")
+            self.p_step1_label.setText(
+                "Step1. Please input amount of {} you want, and".format(self.receive_coind.name) + " " +
+                "amount of {} you send.".format(self.send_coind.name)
+            )
+            try:
+                self.swap_list = self.asns.get_swap_list()
+            except Exception:
+                self.swap_list = {}
+            self.swap_list_view.update()
             self.p_receive_amount_label.setText("Amount of {} you want".format(self.receive_coind.name))
             self.p_send_amount_label.setText("Amount of {} you send".format(self.send_coind.name))
             self.p_receive_amount_unit_label.setText(self.receive_coind.unit)
             self.p_send_amount_unit_label.setText(self.send_coind.unit)
             self.my_address = self.receive_coind.getnewaddress()
             self.button_widget.setCurrentIndex(1)
-            self.i_amount_box.setValidator(QDoubleValidator(0, 999999999999, self.send_coind.decimals))
             self.p_receive_amount_box.setValidator(QDoubleValidator(0, 999999999999, self.send_coind.decimals))
             self.p_send_amount_box.setValidator(QDoubleValidator(0, 999999999999, self.send_coind.decimals))
         elif page_number == 1:
             send_decimals = self.send_coind.decimals
             if self.initiate_flag:
                 try:
-                    self.secret, self.send_contract_tuple = initiate(self.i_addr_box.text(),
-                                                                     to_satoshis(float(self.i_amount_box.text()), send_decimals),
-                                                                     self.send_coind)
-                    self.secret_hash = sha256(self.secret)
+                    print(self.selected_swap["participatorReceiveAmount"])
+                    self.secret, self.send_contract_tuple = initiate(
+                        self.selected_swap["participatorAddress"],
+                        int(self.selected_swap["participatorReceiveAmount"]),
+                        self.send_coind,
+                        base_decode(self.asns_token, 64, 58)
+                    )
                 except atomicswap.coind.InvalidRPCError as e:
                     self.statusBar().showMessage(str(e))
                     return
@@ -561,14 +556,13 @@ class AtomicSwapWindow(QMainWindow):
                     self.statusBar().showMessage(str(e))
                     return
             else:
-                _, self.secret_hash, _ = auditcontract(self.contract_box.text().strip(),
-                                                       self.contract_tx_box.text().strip(),
-                                                       self.receive_coind)
                 try:
-                    self.send_contract_tuple = participate(self.p_addr_box.text(),
-                                                           to_satoshis(float(self.p_send_amount_box.text()), send_decimals),
-                                                           self.secret_hash.hex(),
-                                                           self.send_coind)
+                    self.send_contract_tuple = participate(
+                        self.i_addr,
+                        to_satoshis(float(self.p_send_amount_box.text())),
+                        self.secret_hash.hex(),
+                        self.send_coind
+                    )
                 except atomicswap.coind.InvalidRPCError as e:
                     self.statusBar().showMessage(str(e))
                     return
@@ -576,12 +570,14 @@ class AtomicSwapWindow(QMainWindow):
                     self.statusBar().showMessage(str(e))
                     return
             send_question = QMessageBox.question(self, "Question",
-                                                 "Send transaction? ({})".format(self.send_contract_tuple.contractTxHash.hex()),
+                                                 "Send transaction? ({})".format(
+                                                     self.send_contract_tuple.contractTxHash.hex()),
                                                  QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
             if send_question == QMessageBox.No:
                 return
             try:
-                result = self.send_coind.sendrawtransaction(self.send_contract_tuple.contractTx.serialize_witness().hex())
+                result = self.send_coind.sendrawtransaction(
+                    self.send_contract_tuple.contractTx.serialize_witness().hex())
             except atomicswap.coind.InvalidRPCError as e:
                 QMessageBox.critical(self, "Error", "Fatal problem has occurred!" + "\n" + str(e),
                                      QMessageBox.Ok, QMessageBox.Ok)
@@ -591,24 +587,24 @@ class AtomicSwapWindow(QMainWindow):
                 QMessageBox.critical(self, "Error", "Fatal problem has occurred!" + "\n" + "Transaction is missing!",
                                      QMessageBox.Ok, QMessageBox.Ok)
             if self.initiate_flag:
-                self.contract_result.setPlainText("{} Address: {}".format(self.receive_coin_name, self.my_address))
-                self.contract_result.append("Contract: " + self.send_contract_tuple.contract.hex())
-                self.contract_result.append("Contract Transaction: " +
-                                            self.send_contract_tuple.contractTx.serialize_witness().hex())
+                err = self.asns.initiate_swap(
+                    self.asns_token,
+                    self.selected_swap["key"],
+                    self.send_contract_tuple.contract.hex(),
+                    self.send_contract_tuple.contractTx.serialize_witness().hex(),
+                    self.my_address
+                )
             else:
-                self.contract_result.setPlainText("Contract: " + self.send_contract_tuple.contract.hex())
-                self.contract_result.append("Contract Transaction: " +
-                                            self.send_contract_tuple.contractTx.serialize_witness().hex())
+                err = self.asns.participate_swap(
+                    self.asns_token,
+                    self.send_contract_tuple.contract.hex(),
+                    self.send_contract_tuple.contractTx.serialize_witness().hex()
+                )
+            if err:
+                self.statusBar().showMessage("Error has occurred: {}".format(err))
             self.back_button.setDisabled(True)
             self.db_set_data(self.make_db_data(0))
         elif page_number == 2:
-            if not self.initiate_flag:
-                self.redeem_ip.setCurrentIndex(1)
-            else:
-                self.redeem_ip.setCurrentIndex(0)
-            self.back_button.setEnabled(True)
-            self.next_button_1.setDisabled(True)
-        elif page_number == 3:
             if not self.initiate_flag:
                 try:
                     self.secret = extractsecret(self.redeem_tx.text().strip(),
@@ -652,7 +648,7 @@ class AtomicSwapWindow(QMainWindow):
             self.db_set_data(self.make_db_data(1))
             if not self.initiate_flag:
                 self.button_widget.setCurrentIndex(2)
-        elif page_number == 4:
+        elif page_number == 3:
             self.button_widget.setCurrentIndex(2)
             self.back_button_1.show()
         self.main_widget.setCurrentIndex(page_number + count)
@@ -721,6 +717,7 @@ class AtomicSwapWindow(QMainWindow):
         return {
             "Status": status,
             "Type": type,
+            "Token": self.asns_token,
             "Send": {
                 "Coin": self.send_coin_name,
                 "Value": send_value,
@@ -791,3 +788,78 @@ class AtomicSwapWindow(QMainWindow):
             return ""
         else:
             return "This contract has been successful!"
+
+
+class SwapListView(QTreeView):
+    class Columns(IntEnum):
+        NUM = 0
+        SEND_VALUE = 1
+        RECEIVE_VALUE = 2
+        KEY = 3
+
+    def __init__(self, parent: AtomicSwapWindow):
+        super().__init__()
+        self.parent = parent
+        self.swap_list = parent.swap_list
+        self.setItemsExpandable(False)
+        self.setIndentation(0)
+        self.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        self.header().setResizeContentsPrecision(0)
+        self.header().setStretchLastSection(False)
+
+    def selected_in_column(self, column: int):
+        items = self.selectionModel().selectedIndexes()
+        print(items)
+        return list(x for x in items if x.column() == column)
+
+    def update(self):
+        self.set_model()
+        swap_list = self.parent.swap_list
+        self.swap_list = swap_list if swap_list is not None else {}
+        count = 0
+        for key in self.swap_list.keys():
+            data = self.swap_list[key]
+            if (
+                    data["participatorCurrency"] == self.parent.receive_coind.unit and
+                    data["initiatorCurrency"] == self.parent.send_coind.unit
+            ):
+                self.model().insertRow(count)
+                self.model().setData(self.model().index(count, self.Columns.NUM), count + 1)
+                self.model().setData(
+                    self.model().index(count, self.Columns.SEND_VALUE), to_amount(
+                        data["participatorReceiveAmount"], self.parent.send_coind.decimals
+                    )
+                )
+                self.model().setData(
+                    self.model().index(count, self.Columns.RECEIVE_VALUE), to_amount(
+                        data["initiatorReceiveAmount"], self.parent.receive_coind.decimals
+                    )
+                )
+                self.model().setData(self.model().index(count, self.Columns.KEY), key)
+                count += 1
+
+    def set_model(self):
+        self.setModel(QStandardItemModel(0, 4, self))
+        self.model().setHeaderData(self.Columns.NUM, Qt.Horizontal, "No")
+        self.model().setHeaderData(
+            self.Columns.SEND_VALUE, Qt.Horizontal, "Send {} value".format(self.parent.send_coind.unit)
+        )
+        self.model().setHeaderData(
+            self.Columns.RECEIVE_VALUE, Qt.Horizontal, "Receive {} value".format(self.parent.receive_coind.unit)
+        )
+        self.model().setHeaderData(self.Columns.KEY, Qt.Horizontal, "Key")
+        for i in range(3):
+            self.header().setSectionResizeMode(i, QHeaderView.ResizeToContents)
+        self.header().setSectionResizeMode(3, QHeaderView.Stretch)
+
+    def mouseReleaseEvent(self, item):
+        idx = self.indexAt(item.pos())
+        if not idx.isValid():
+            self.parent.select_swap()
+            return
+        key = self.model().itemFromIndex(self.selected_in_column(self.Columns.KEY)[0]).text()
+        self.parent.select_swap(key)
+
+    def mouseDoubleClickEvent(self, item):
+        """ダブルクリックすると値を編集できてしまうことに対する対策"""
+        pass
