@@ -870,4 +870,4 @@ class SwapListView(QTreeView):
 
     def mouseDoubleClickEvent(self, item):
         """ダブルクリックすると値を編集できてしまうことに対する対策"""
-        pass
+        self.mouseReleaseEvent(item)
