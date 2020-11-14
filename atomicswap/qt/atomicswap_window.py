@@ -33,7 +33,7 @@ from typing import Tuple, Optional, TYPE_CHECKING
 
 from atomicswap.asns import ASNSConnect
 from atomicswap.auditcontract import auditcontract
-from atomicswap.address import is_p2pkh, sha256, hash160, hash160_to_b58_address, base_decode
+from atomicswap.address import is_p2pkh, sha256d, hash160, hash160_to_b58_address, base_decode
 from atomicswap.coind import make_coin_data, GetConfigError, RestartWallet, InvalidRPCError
 from atomicswap.initiate import initiate
 from atomicswap.participate import participate
@@ -407,7 +407,7 @@ class AtomicSwapWindow(QMainWindow):
                                                                self.i_p_tx.text().strip(),
                                                                self.receive_coind,
                                                                False)
-                if secret_hash != sha256(self.secret):
+                if secret_hash != sha256d(self.secret):
                     raise
                 label_text = "Contract is Ok, (Your receive amount {} {})".format(str(value), self.receive_coind.unit)
                 self.i_p_contract_status_label.setText(label_text)
@@ -763,7 +763,7 @@ class AtomicSwapWindow(QMainWindow):
             if data["Type"] == "i":
                 self.initiate_flag = True
                 self.secret = binascii.a2b_hex(data["Secret"])
-                if sha256(self.secret) != self.secret_hash:
+                if sha256d(self.secret) != self.secret_hash:
                     return "Secret or SecretHash is missing!"
             else:
                 self.contract_box.setText(data["Receive"]["Contract"])
