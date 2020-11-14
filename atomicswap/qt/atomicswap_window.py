@@ -68,6 +68,7 @@ class AtomicSwapWindow(QMainWindow):
         self.parent = parent
         self.asns = None  # type: ASNSConnect
         self.asns_token = None  # type: str
+        self.asns_key = None  # type: str
         self.swap_list = None  # type: dict
         self.selected_swap = None  # type: dict
         self.send_coind = None  # type: Coind
@@ -560,6 +561,7 @@ class AtomicSwapWindow(QMainWindow):
                 except BuildContractError as e:
                     self.statusBar().showMessage(str(e))
                     return
+                self.asns_key = self.selected_swap["key"]
             else:
                 try:
                     self.send_contract_tuple = participate(
@@ -574,6 +576,8 @@ class AtomicSwapWindow(QMainWindow):
                 except BuildContractError as e:
                     self.statusBar().showMessage(str(e))
                     return
+                self.asns_key = sha256d(base_decode(self.asns_token, 64, 58)).hex()
+
             send_question = QMessageBox.question(self, "Question",
                                                  "Send transaction? ({})".format(
                                                      self.send_contract_tuple.contractTxHash.hex()),
@@ -725,9 +729,7 @@ class AtomicSwapWindow(QMainWindow):
             "Status": status,
             "Type": type,
             "Token": self.asns_token,
-            "Key": self.selected_swap["key"] if self.selected_swap is not None else sha256d(
-                base_decode(self.asns_token, 64, 58)
-            ).hex(),
+            "Key": self.asns_key,
             "Send": {
                 "Coin": self.send_coin_name,
                 "Value": send_value,
