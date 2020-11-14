@@ -542,7 +542,6 @@ class AtomicSwapWindow(QMainWindow):
             send_decimals = self.send_coind.decimals
             if self.initiate_flag:
                 try:
-                    print(self.selected_swap["participatorReceiveAmount"])
                     self.secret, self.send_contract_tuple = initiate(
                         self.selected_swap["participatorAddress"],
                         int(self.selected_swap["participatorReceiveAmount"]),
