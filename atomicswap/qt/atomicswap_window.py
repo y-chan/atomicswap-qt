@@ -576,8 +576,9 @@ class AtomicSwapWindow(QMainWindow):
             if send_question == QMessageBox.No:
                 return
             try:
-                result = self.send_coind.sendrawtransaction(
-                    self.send_contract_tuple.contractTx.serialize_witness().hex())
+                # result = self.send_coind.sendrawtransaction(
+                #     self.send_contract_tuple.contractTx.serialize_witness().hex())
+                result = self.send_contract_tuple.contractTxHash.hex()
             except atomicswap.coind.InvalidRPCError as e:
                 QMessageBox.critical(self, "Error", "Fatal problem has occurred!" + "\n" + str(e),
                                      QMessageBox.Ok, QMessageBox.Ok)
