@@ -21,8 +21,8 @@
 # SOFTWARE.
 
 from PyQt5.QtWidgets import (QMainWindow, QWidget, QPushButton, QDesktopWidget, QHBoxLayout, QTextEdit, QLineEdit,
-                             QComboBox, QLabel, QVBoxLayout, QButtonGroup, QRadioButton, QStackedWidget, QMessageBox,
-                             QTreeView, QAbstractItemView, QHeaderView)
+                             QComboBox, QLabel, QVBoxLayout, QButtonGroup, QRadioButton, QStackedWidget, QStackedLayout,
+                             QMessageBox, QTreeView, QAbstractItemView, QHeaderView)
 from PyQt5.QtGui import QPixmap, QDoubleValidator, QStandardItemModel
 from PyQt5.QtCore import Qt
 
@@ -80,6 +80,8 @@ class AtomicSwapWindow(QMainWindow):
         self.my_address = ""
         self.i_addr = ""
         self.p_addr = ""
+        self.contract = None  # type: str # used during redeem
+        self.contract_tx = None  # type: str # used during redeem
         self.send_contract_tuple = None  # type: built_tuple
         self.receive_tx = None  # type: MsgTx
         self.main_window = QWidget(self)
@@ -165,14 +167,10 @@ class AtomicSwapWindow(QMainWindow):
 
         # finish buttons
         self.finish_button_widget = QWidget()
-        self.back_button_1 = QPushButton("Back", self)
         self.finish_button = QPushButton("Finish", self)
         self.finish_button_hbox = QHBoxLayout(self.finish_button_widget)
         self.finish_button_hbox.addStretch(1)
-        self.finish_button_hbox.addWidget(self.back_button_1)
         self.finish_button_hbox.addWidget(self.finish_button)
-        self.back_button_1.hide()
-        self.back_button_1.clicked.connect(self.back_page)
         self.finish_button.clicked.connect(self.hide)
         self.button_widget.addWidget(self.finish_button_widget)
 
@@ -256,56 +254,28 @@ class AtomicSwapWindow(QMainWindow):
         # redeem window
         self.redeem = QWidget()
         self.redeem_vbox = QVBoxLayout(self.redeem)
-        self.redeem_ip = QStackedWidget()
-        self.i_widget = QWidget()
-        self.p_widget = QWidget()
-        self.i_vbox = QVBoxLayout(self.i_widget)
-        self.i_r_label = QLabel("Please input participator's Contract and Contract Transaction.")
-        self.i_p_contract_status_label = QLabel("Contract isn't Ok")
-        self.i_p_contract_label = QLabel("Contract")
-        self.i_p_contract = QLineEdit(self)
-        self.i_p_contract.textEdited.connect(self.redeem_edited)
-        self.i_p_tx_label = QLabel("Contract Transaction")
-        self.i_p_tx = QLineEdit(self)
-        self.i_p_tx.textEdited.connect(self.redeem_edited)
-        self.i_vbox.addWidget(self.i_r_label)
-        self.i_vbox.addWidget(self.i_p_contract_status_label)
-        self.i_vbox.addWidget(self.i_p_contract_label)
-        self.i_vbox.addWidget(self.i_p_contract)
-        self.i_vbox.addWidget(self.i_p_tx_label)
-        self.i_vbox.addWidget(self.i_p_tx)
-        self.p_vbox = QVBoxLayout(self.p_widget)
-        self.redeem_tx_label = QLabel("Please input initiator's redeem transaction.")
-        self.redeem_tx_status_label = QLabel("Transaction isn't Ok")
-        self.redeem_tx = QLineEdit(self)
-        self.redeem_tx.textEdited.connect(self.redeem_edited)
-        self.p_vbox.addWidget(self.redeem_tx_label)
-        self.p_vbox.addStretch(1)
-        self.p_vbox.addWidget(self.redeem_tx_status_label)
-        self.p_vbox.addWidget(self.redeem_tx)
-        self.redeem_ip.addWidget(self.i_widget)
-        self.redeem_ip.addWidget(self.p_widget)
-        self.redeem_label = QLabel("Press the Next button to execute redeem.")
+        self.redeem_ip = QStackedLayout()
+        self.get_participator_widget = QWidget()
+        self.get_participator_hbox = QHBoxLayout(self.get_participator_widget)
+        self.get_participator_label = QLabel("Please press get participator's info button until you can get it.")
+        self.get_participator_button = QPushButton("Get participator's info")
+        self.get_participator_button.clicked.connect(self.get_participator_info)
+        self.get_participator_hbox.addWidget(self.get_participator_label)
+        self.get_participator_hbox.addStretch(1)
+        self.get_participator_hbox.addWidget(self.get_participator_widget)
+        self.get_redeem_info_widget = QWidget()
+        self.get_redeem_info_hbox = QHBoxLayout(self.get_redeem_info_widget)
+        self.get_redeem_info_label = QLabel("Please press get redeem info button until you can get it.")
+        self.get_redeem_info_button = QPushButton("Get redeem info")
+        self.get_redeem_info_button.clicked.connect(self.get_redeem_info)
+        self.get_redeem_info_hbox.addWidget(self.get_redeem_info_label)
+        self.get_redeem_info_hbox.addStretch(1)
+        self.get_redeem_info_hbox.addWidget(self.get_redeem_info_button)
+        self.redeem_ip.addWidget(self.get_participator_widget)
+        self.redeem_ip.addWidget(self.get_redeem_info_widget)
         self.redeem_vbox.addWidget(self.redeem_ip)
-        self.redeem_vbox.addWidget(self.redeem_label)
         self.redeem_vbox.addStretch(1)
         self.main_widget.addWidget(self.redeem)
-
-        # confirm redeem window (only initiator)
-        self.confirm_r = QWidget(self.main_widget)
-        self.confirm_r_vbox = QVBoxLayout(self.confirm_r)
-        self.copy_r_hbox = QHBoxLayout()
-        self.copy_r_label = QLabel("Please copy and send to your trading partner.")
-        self.copy_r_button = QPushButton("Copy")
-        self.copy_r_hbox.addWidget(self.copy_r_label)
-        self.copy_r_hbox.addStretch(1)
-        self.copy_r_hbox.addWidget(self.copy_r_button)
-        self.redeem_result = QTextEdit(self)
-        self.redeem_result.setReadOnly(True)
-        self.copy_r_button.clicked.connect(lambda: copy(self.redeem_result.toPlainText()))
-        self.confirm_r_vbox.addLayout(self.copy_r_hbox)
-        self.confirm_r_vbox.addWidget(self.redeem_result)
-        self.main_widget.addWidget(self.confirm_r)
 
         # success atomicswap window
         self.success = QWidget()
@@ -391,8 +361,37 @@ class AtomicSwapWindow(QMainWindow):
             self.next_button_1.setDisabled(True)
             return
         self.statusBar().showMessage("Initiator found! Please press next button.")
+        self.contract = contract
+        self.contract_tx = raw_tx
         self.get_initiator_button.setDisabled(True)
         self.next_button_1.setEnabled(True)
+
+    def get_participator_info(self):
+        result = self.asns.get_participator_info(self.asns_token, self.asns_key)
+        contract = result["participateContract"]
+        raw_tx = result["participateRawTransaction"]
+        try:
+            _, secret_hash, _ = auditcontract(contract, raw_tx, self.send_coind, False)
+        except Exception:
+            secret_hash = None
+        if secret_hash != self.secret_hash:
+            self.statusBar().showMessage("Participator is still in process...")
+            self.next_button_1.setDisabled(True)
+            return
+        self.statusBar().showMessage("Participator's process is finished. Please press next button.")
+        self.contract = contract
+        self.contract_tx = raw_tx
+        self.get_participator_button.setDisabled(True)
+        self.next_button_1.setEnabled(True)
+
+    def get_redeem_info(self):
+        assert not self.initiate_flag
+        secret = self.asns.get_redeem_token(self.asns_token)
+        if secret is not None:
+            self.secret = binascii.a2b_hex(secret)
+            self.statusBar().showMessage("Get redeem info is completed. Please press next button.")
+            self.get_redeem_info_button.setDisabled(True)
+            self.next_button_1.setEnabled(True)
 
     def register_edited(self):
         try:
@@ -508,6 +507,7 @@ class AtomicSwapWindow(QMainWindow):
     def next_page(self):
         page_number = self.main_widget.currentIndex()
         count = 1
+        status_bar_msg = ""
         if self.asns is None:
             try:
                 self.asns = ASNSConnect()
@@ -611,33 +611,16 @@ class AtomicSwapWindow(QMainWindow):
                     self.send_contract_tuple.contractTx.serialize_witness().hex()
                 )
             if err:
-                self.statusBar().showMessage("Error has occurred: {}".format(err))
+                status_bar_msg = "Error has occurred: {}".format(err)
             self.back_button.setDisabled(True)
             self.next_button_1.setDisabled(True)
             self.db_set_data(self.make_db_data(0))
         elif page_number == 2:
-            if not self.initiate_flag:
-                try:
-                    self.secret = extractsecret(self.redeem_tx.text().strip(),
-                                                self.secret_hash.hex(),
-                                                self.send_coind)
-                    self.receive_tx, _ = redeem(self.contract_box.text().strip(),
-                                                self.contract_tx_box.text().strip(),
-                                                self.secret.hex(),
-                                                self.receive_coind)
-                except atomicswap.coind.InvalidRPCError as e:
-                    self.statusBar().showMessage(str(e))
-                    return
-                count += 1
-            else:
-                try:
-                    self.receive_tx, _ = redeem(self.i_p_contract.text().strip(),
-                                                self.i_p_tx.text().strip(),
-                                                self.secret.hex(),
-                                                self.receive_coind)
-                except atomicswap.coind.InvalidRPCError as e:
-                    self.statusBar().showMessage(str(e))
-                    return
+            try:
+                self.receive_tx, _ = redeem(self.contract, self.contract_tx, self.secret.hex(), self.receive_coind)
+            except atomicswap.coind.InvalidRPCError as e:
+                self.statusBar().showMessage(str(e))
+                return
             send_question = QMessageBox.question(self, "Question",
                                                  "Send transaction? ({})".format(self.receive_tx.get_txid().hex()),
                                                  QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
@@ -654,17 +637,18 @@ class AtomicSwapWindow(QMainWindow):
             if result != self.receive_tx.get_txid().hex():
                 QMessageBox.critical(self, "Error", "Fatal problem has occurred!" + "\n" + "Transaction is missing!",
                                      QMessageBox.Ok, QMessageBox.Ok)
-            self.redeem_result.setPlainText("Redeem Transaction: " +
-                                            self.receive_tx.serialize_witness().hex())
-            self.back_button.setDisabled(True)
+            if self.initiate_flag:
+                err = self.asns.redeem_swap(
+                    self.asns_token, self.receive_tx.serialize_witness().hex(), self.selected_swap["key"]
+                )
+            else:
+                err = self.asns.complete_swap(self.asns_token, self.receive_tx.serialize_witness().hex())
+            if err:
+                status_bar_msg = "Error has occurred: {}".format(err)
             self.db_set_data(self.make_db_data(1))
-            if not self.initiate_flag:
-                self.button_widget.setCurrentIndex(2)
-        elif page_number == 3:
             self.button_widget.setCurrentIndex(2)
-            self.back_button_1.show()
         self.main_widget.setCurrentIndex(page_number + count)
-        self.statusBar().showMessage("")
+        self.statusBar().showMessage(status_bar_msg)
 
     def back_page(self):
         page_number = self.main_widget.currentIndex()
